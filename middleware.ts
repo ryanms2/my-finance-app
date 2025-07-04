@@ -1,8 +1,17 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/utils/supabase/middleware";
+import { NextRequest, NextResponse } from 'next/server'
+import { getUrl } from "./lib/get-url";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  const token = request.cookies.get("authjs.session-token");
+  const pathname = request.nextUrl.pathname;
+
+  if (pathname === "/signin" && token) {
+    return NextResponse.redirect(new URL(getUrl('/dashboard')))
+  }
+
+  if (pathname.includes("/dashboard") && !token) {
+    return NextResponse.redirect(new URL(getUrl('/signin')))
+  }
 }
 
 export const config = {
