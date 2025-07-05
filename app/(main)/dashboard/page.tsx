@@ -54,10 +54,10 @@ export default async function Dashboard() {
               account={wallets}
               categories={categories}
             />
-            {/* <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
+            <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
               <Download className="h-4 w-4" />
               Exportar
-            </Button> */}
+            </Button>
             <UserNav />
           </div>
         </header>
