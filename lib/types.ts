@@ -74,14 +74,11 @@ export const formSchemaAccount = z.object({
       .string()
       .optional()
       .refine(
-        (val: any, ctx: any) => {
-          // Só valida se for cartão de crédito ou débito
-          const type = ctx?.parent?.type;
-          if (["credit", "debit"].includes(type)) {
-            // Obrigatório e deve ser exatamente 4 dígitos numéricos
-            return !!val && /^\d{4}$/.test(val);
+        (val: any) => {
+          // Se valor existe, deve ser 4 dígitos numéricos
+          if (val) {
+            return /^\d{4}$/.test(val);
           }
-          // Para outros tipos, pode ser qualquer coisa (ou vazio)
           return true;
         },
         {
@@ -114,6 +111,27 @@ export const formSchemaTransaction = z.object({
     account: z.string().min(1, {
       message: "Por favor selecione um id de conta.",
     }).optional(),
+    category: z.string().min(1, {
+      message: "Por favor selecione um id de categoria.",
+    })
+});
+
+export const formSchemaTransactionEdit = z.object({
+    description: z.string().min(2, {
+      message: "A descrição deve ter pelo menos 2 caracteres.",
+    }),
+    amount: z.coerce.number().min(0.01, {
+      message: "O valor deve ser maior que zero.",
+    }),
+    date: z.date().min(minDateThisYear, {
+      message: "Por favor selecione uma data a partir deste ano.",
+    }),
+    type: z.string().min(1, {
+      message: "Por favor selecione um tipo.",
+    }),
+    account: z.string().min(1, {
+      message: "Por favor selecione um id de conta.",
+    }),
     category: z.string().min(1, {
       message: "Por favor selecione um id de categoria.",
     })

@@ -197,6 +197,8 @@ export function TransactionsPage({
                         <TransactionsTable 
                           transactions={transactionsData.transactions}
                           pagination={transactionsData.pagination}
+                          wallets={wallets ? wallets.map(w => ({ id: w.id, name: w.name, type: w.type })) : []}
+                          categories={categories ? categories.map(c => ({ id: c.id, name: c.name, type: c.type, icon: c.icon })) : []}
                         />
                     </CardContent>
                     </Card>
@@ -210,6 +212,8 @@ export function TransactionsPage({
                         <TransactionsTable 
                           transactions={transactionsData.transactions}
                           pagination={transactionsData.pagination}
+                          wallets={wallets ? wallets.map(w => ({ id: w.id, name: w.name, type: w.type })) : []}
+                          categories={categories ? categories.map(c => ({ id: c.id, name: c.name, type: c.type, icon: c.icon })) : []}
                         />
                     </CardContent>
                     </Card>
@@ -223,6 +227,8 @@ export function TransactionsPage({
                         <TransactionsTable 
                           transactions={transactionsData.transactions}
                           pagination={transactionsData.pagination}
+                          wallets={wallets ? wallets.map(w => ({ id: w.id, name: w.name, type: w.type })) : []}
+                          categories={categories ? categories.map(c => ({ id: c.id, name: c.name, type: c.type, icon: c.icon })) : []}
                         />
                     </CardContent>
                     </Card>

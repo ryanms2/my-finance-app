@@ -20,8 +20,6 @@ export default async function Transactions({
     const search = params.search || '';
     const page = parseInt(params.page || '1');
 
-    console.log('Filtros de transações:', { type, search, page });
-
     const [transactionsData, summary, walletsRaw, categoriesRaw, session] = await Promise.all([
       getTransactionsData({ type, search, page }),
       getTransactionsSummary(),
@@ -29,11 +27,6 @@ export default async function Transactions({
       getCategoriesUser(),
       auth()
     ]);
-
-    console.log('Dados das transações:', {
-      transactionsCount: transactionsData.transactions.length,
-      pagination: transactionsData.pagination,
-    });
 
     // Formatar carteiras
     const wallets = Array.isArray(walletsRaw)

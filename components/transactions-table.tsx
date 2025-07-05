@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { TransactionData } from '@/lib/types'
+import { EditTransactionDialog } from "./transactions/edit-transaction-dialog"
+import { DeleteTransactionDialog } from "./transactions/delete-transaction-dialog"
 
 interface Pagination {
   page: number;
@@ -26,9 +28,20 @@ interface Pagination {
 interface TransactionsTableProps {
   transactions?: TransactionData[];
   pagination?: Pagination;
+  wallets?: Array<{
+    id: string
+    name: string
+    type: string
+  }>;
+  categories?: Array<{
+    id: string
+    name: string
+    type: 'income' | 'expense'
+    icon?: string
+  }>;
 }
 
-export function TransactionsTable({ transactions = [], pagination }: TransactionsTableProps) {
+export function TransactionsTable({ transactions = [], pagination, wallets = [], categories = [] }: TransactionsTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -120,10 +133,17 @@ export function TransactionsTable({ transactions = [], pagination }: Transaction
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-gray-900 border-gray-800">
                       <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                      <DropdownMenuItem>Editar</DropdownMenuItem>
-                      <DropdownMenuItem>Duplicar</DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <EditTransactionDialog
+                          transaction={transaction}
+                          wallets={wallets}
+                          categories={categories}
+                        />
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-500">Excluir</DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <DeleteTransactionDialog transaction={transaction} />
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -154,10 +174,13 @@ export function TransactionsTable({ transactions = [], pagination }: Transaction
                 {getStatusBadge(transaction.type)}
               </div>
             </div>
-            <div className="mt-2 text-right">
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                Editar
-              </Button>
+            <div className="mt-2 flex justify-end gap-2">
+              <EditTransactionDialog
+                transaction={transaction}
+                wallets={wallets}
+                categories={categories}
+              />
+              <DeleteTransactionDialog transaction={transaction} />
             </div>
           </div>
         ))}

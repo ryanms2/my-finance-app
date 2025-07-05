@@ -374,3 +374,93 @@ export async function createTransfer(transfer: TransferFormValues) {
     return false
   }
 }
+
+export async function updateTransaction(transactionId: string, transaction: TransactionFormValues) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    throw new Error("Usuário não autenticado");
+  }
+
+  // Verificar se a transação pertence ao usuário
+  const existingTransaction = await prisma.transaction.findFirst({
+    where: {
+      id: transactionId,
+      userId: userId
+    }
+  });
+
+  if (!existingTransaction) {
+    throw new Error("Transação não encontrada ou sem permissão");
+  }
+
+  // Verificar se as carteiras e categorias pertencem ao usuário
+  const [accountExists, categoryExists] = await Promise.all([
+    prisma.account.findFirst({
+      where: { id: transaction.account, userId: userId }
+    }),
+    prisma.category.findFirst({
+      where: { id: transaction.category, userId: userId }
+    })
+  ]);
+
+  if (!accountExists) {
+    throw new Error("Carteira não encontrada ou sem permissão");
+  }
+
+  if (!categoryExists) {
+    throw new Error("Categoria não encontrada ou sem permissão");
+  }
+
+  try {
+    await prisma.transaction.update({
+      where: { id: transactionId },
+      data: {
+        description: transaction.description,
+        amount: transaction.amount,
+        date: transaction.date,
+        type: transaction.type,
+        accountId: transaction.account,
+        categoryId: transaction.category,
+      }
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao atualizar transação:", error);
+    throw new Error("Erro ao atualizar transação");
+  }
+}
+
+export async function deleteTransaction(transactionId: string) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    throw new Error("Usuário não autenticado");
+  }
+
+  // Verificar se a transação pertence ao usuário
+  const existingTransaction = await prisma.transaction.findFirst({
+    where: {
+      id: transactionId,
+      userId: userId
+    }
+  });
+
+  if (!existingTransaction) {
+    throw new Error("Transação não encontrada ou sem permissão");
+  }
+
+  try {
+    await prisma.transaction.delete({
+      where: { id: transactionId }
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Erro ao deletar transação:", error);
+    throw new Error("Erro ao deletar transação");
+  }
+}
