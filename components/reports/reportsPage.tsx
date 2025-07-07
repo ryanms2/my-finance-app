@@ -1,10 +1,14 @@
-import { Download, Calendar } from "lucide-react"
+"use client"
+
+import { useState, useMemo, useTransition } from "react"
+import { Download } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { MonthYearPicker } from "@/components/ui/month-year-picker"
 import { Sidebar } from "@/components/sidebar"
-import { UserNav } from "@/components/user-nav"
+import { UserNavClient } from "@/components/user-nav-client"
 import { MobileNav } from "@/components/mobile-nav"
 import { MobileMenu } from "@/components/mobile-menu"
 import { MonthlySpendingChart } from "@/components/monthly-spending-chart"
@@ -13,13 +17,52 @@ import { AdvancedMetrics } from "@/components/advanced-metrics"
 import { ComparisonChart } from "@/components/comparison-chart"
 import type { ReportsData, AdvancedMetricsData, MonthlyChartDataItem } from "@/lib/types"
 
+import { useRouter, useSearchParams } from "next/navigation"
+
+// ...existing code...
+
 interface ReportsPageProps {
   reportsData: ReportsData | null;
   advancedMetrics: AdvancedMetricsData | null;
   monthlyChartData: MonthlyChartDataItem[] | null;
+  selectedMonth: number;
+  selectedYear: number;
+  user?: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
 }
 
-export function ReportsPage({ reportsData, advancedMetrics, monthlyChartData }: ReportsPageProps) {
+export function ReportsPage({ 
+  reportsData, 
+  advancedMetrics, 
+  monthlyChartData, 
+  selectedMonth: initialMonth, 
+  selectedYear: initialYear,
+  user
+}: ReportsPageProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+  const [selectedYear, setSelectedYear] = useState(initialYear);
+  const [isPending, startTransition] = useTransition();
+
+  // Função para lidar com mudança de filtro
+  const handleFilterChange = (value: { month: number; year: number }) => {
+    if (value.month === selectedMonth && value.year === selectedYear) return;
+
+    setSelectedMonth(value.month);
+    setSelectedYear(value.year);
+
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('month', value.month.toString());
+      params.set('year', value.year.toString());
+      router.push(`/reports?${params.toString()}`);
+    });
+  };
   // Função para formatar valores monetários
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -40,31 +83,35 @@ export function ReportsPage({ reportsData, advancedMetrics, monthlyChartData }: 
     return isPositive ? 'text-green-400' : 'text-red-400';
   };
 
-  // Função para obter o mês atual
-  const getCurrentMonth = () => {
-    const now = new Date();
-    return now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  };
-
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 text-white">
       <Sidebar />
       <MobileMenu />
       <div className="flex-1 overflow-auto pb-20 lg:pb-0">
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-800 bg-gray-950/80 px-4 sm:px-6 backdrop-blur-md">
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
             <h1 className="text-xl font-bold ml-10 lg:ml-0">Relatórios</h1>
+            {/* Mobile month picker */}
+            <MonthYearPicker
+              value={{ month: selectedMonth, year: selectedYear }}
+              onChange={handleFilterChange}
+              disabled={isPending}
+              className="sm:hidden"
+            />
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
-              <Calendar className="h-4 w-4" />
-              {getCurrentMonth()}
-            </Button>
+            {/* Desktop month picker */}
+            <MonthYearPicker
+              value={{ month: selectedMonth, year: selectedYear }}
+              onChange={handleFilterChange}
+              disabled={isPending}
+              className="hidden sm:flex"
+            />
             <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
               <Download className="h-4 w-4" />
               Exportar
             </Button>
-            <UserNav />
+            <UserNavClient user={user} />
           </div>
         </header>
 
@@ -89,68 +136,68 @@ export function ReportsPage({ reportsData, advancedMetrics, monthlyChartData }: 
                     </div>
                     <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.totalBalance) : 'text-gray-400'}`}>
                       {reportsData && reportsData.summary.variations.totalBalance !== 0 
-                        ? `${formatVariation(reportsData.summary.variations.totalBalance)} em relação ao mês anterior`
-                        : 'Sem dados do mês anterior'
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
+                      ? `${formatVariation(reportsData.summary.variations.totalBalance)} em relação ao mês anterior`
+                      : 'Sem dados do mês anterior'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gray-900/50 border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Receitas</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {reportsData ? formatCurrency(reportsData.summary.currentIncome) : 'R$ 0,00'}
-                    </div>
-                    <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.income) : 'text-gray-400'}`}>
-                      {reportsData && reportsData.summary.variations.income !== 0 
-                        ? `${formatVariation(reportsData.summary.variations.income)} em relação ao mês anterior`
-                        : 'Sem dados do mês anterior'
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
+              <Card className="bg-gray-900/50 border-gray-800">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Receitas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {reportsData ? formatCurrency(reportsData.summary.currentIncome) : 'R$ 0,00'}
+                  </div>
+                  <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.income) : 'text-gray-400'}`}>
+                    {reportsData && reportsData.summary.variations.income !== 0 
+                      ? `${formatVariation(reportsData.summary.variations.income)} em relação ao mês anterior`
+                      : 'Sem dados do mês anterior'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gray-900/50 border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Despesas</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {reportsData ? formatCurrency(reportsData.summary.currentExpenses) : 'R$ 0,00'}
-                    </div>
-                    <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.expenses, true) : 'text-gray-400'}`}>
-                      {reportsData && reportsData.summary.variations.expenses !== 0 
-                        ? `${formatVariation(reportsData.summary.variations.expenses)} em relação ao mês anterior`
-                        : 'Sem dados do mês anterior'
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
+              <Card className="bg-gray-900/50 border-gray-800">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Despesas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {reportsData ? formatCurrency(reportsData.summary.currentExpenses) : 'R$ 0,00'}
+                  </div>
+                  <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.expenses, true) : 'text-gray-400'}`}>
+                    {reportsData && reportsData.summary.variations.expenses !== 0 
+                      ? `${formatVariation(reportsData.summary.variations.expenses)} em relação ao mês anterior`
+                      : 'Sem dados do mês anterior'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
 
-                <Card className="bg-gray-900/50 border-gray-800">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">Economia</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {reportsData ? formatCurrency(reportsData.summary.currentBalance) : 'R$ 0,00'}
-                    </div>
-                    <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.balance) : 'text-gray-400'}`}>
-                      {reportsData && reportsData.summary.variations.balance !== 0 
-                        ? `${formatVariation(reportsData.summary.variations.balance)} em relação ao mês anterior`
-                        : 'Sem dados do mês anterior'
-                      }
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+              <Card className="bg-gray-900/50 border-gray-800">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Economia</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {reportsData ? formatCurrency(reportsData.summary.currentBalance) : 'R$ 0,00'}
+                  </div>
+                  <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.balance) : 'text-gray-400'}`}>
+                    {reportsData && reportsData.summary.variations.balance !== 0 
+                      ? `${formatVariation(reportsData.summary.variations.balance)} em relação ao mês anterior`
+                      : 'Sem dados do mês anterior'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
 
-              <AdvancedMetrics data={advancedMetrics} />
+            <AdvancedMetrics data={advancedMetrics} />
 
-              <div className="grid gap-4 sm:gap-6 md:grid-cols-1 lg:grid-cols-7">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-1 lg:grid-cols-7">
                 <Card className="lg:col-span-4 bg-gray-900/50 border-gray-800">
                   <CardHeader>
                     <CardTitle>Gastos Mensais</CardTitle>

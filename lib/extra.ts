@@ -618,6 +618,7 @@ export async function getReportsData() {
       } else if (transactionType === 'expense') {
         previousExpenses += transaction.amount;
         
+        // Agrupar por dia
         const day = transaction.date.getDate().toString();
         previousDailyExpenses[day] = (previousDailyExpenses[day] || 0) + transaction.amount;
       }
@@ -674,162 +675,359 @@ export async function getReportsData() {
   }
 }
 
-export async function getAdvancedMetrics() {
+// Função para obter dados de relatórios filtrados por mês e ano
+export async function getReportsDataFiltered(month: number, year: number) {
   const session = await auth();
   if (!session?.user?.id) return null;
 
   try {
-    const now = new Date();
-    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    const previousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const targetMonth = new Date(year, month - 1, 1);
+    const previousMonth = new Date(year, month - 2, 1);
+    const nextMonth = new Date(year, month, 1);
 
-    // Buscar transações do mês atual
+    // Buscar transações do mês alvo
     const currentTransactions = await prisma.transaction.findMany({
       where: { 
         userId: session.user.id,
         date: {
-          gte: currentMonth,
+          gte: targetMonth,
           lt: nextMonth
         }
       },
-      include: { category: true },
+      include: { category: true, account: true },
     });
-
+  
     // Buscar transações do mês anterior
     const previousTransactions = await prisma.transaction.findMany({
       where: { 
         userId: session.user.id,
         date: {
           gte: previousMonth,
-          lt: currentMonth
+          lt: targetMonth
+        }
+      },
+      include: { category: true },
+    });
+  
+    // Buscar contas
+    const accounts = await prisma.account.findMany({
+      where: { userId: session.user.id },
+    });
+
+    // Calcular valores do mês alvo
+    let currentIncome = 0;
+    let currentExpenses = 0;
+    const expensesByCategory: Record<string, { name: string; amount: number; color: string }> = {};
+    const dailyExpenses: Record<string, number> = {};
+
+    currentTransactions.forEach((transaction) => {
+      const transactionType = transaction.category?.type || transaction.type;
+      
+      if (transactionType === 'income') {
+        currentIncome += transaction.amount;
+      } else if (transactionType === 'expense') {
+        currentExpenses += transaction.amount;
+        
+        // Agrupar por categoria
+        const categoryName = transaction.category?.name || 'Outros';
+        const categoryColor = transaction.category?.color || 'bg-gray-500';
+        
+        if (!expensesByCategory[categoryName]) {
+          expensesByCategory[categoryName] = {
+            name: categoryName,
+            amount: 0,
+            color: categoryColor
+          };
+        }
+        expensesByCategory[categoryName].amount += transaction.amount;
+
+        // Agrupar por dia
+        const day = transaction.date.getDate().toString();
+        dailyExpenses[day] = (dailyExpenses[day] || 0) + transaction.amount;
+      }
+    });
+
+    // Calcular valores do mês anterior
+    let previousIncome = 0;
+    let previousExpenses = 0;
+    const previousDailyExpenses: Record<string, number> = {};
+
+    previousTransactions.forEach((transaction) => {
+      const transactionType = transaction.category?.type || transaction.type;
+      
+      if (transactionType === 'income') {
+        previousIncome += transaction.amount;
+      } else if (transactionType === 'expense') {
+        previousExpenses += transaction.amount;
+        
+        // Agrupar por dia para comparação
+        const day = transaction.date.getDate().toString();
+        previousDailyExpenses[day] = (previousDailyExpenses[day] || 0) + transaction.amount;
+      }
+    });
+
+    // Calcular saldo total
+    const totalBalance = accounts.reduce((sum, account) => sum + (account.balance ?? 0), 0);
+    const currentBalance = currentIncome - currentExpenses;
+    const previousBalance = previousIncome - previousExpenses;
+
+    // Função auxiliar para calcular variação percentual
+    const calcVariation = (current: number, previous: number): number => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return ((current - previous) / previous) * 100;
+    };
+
+    // Preparar dados de categorias ordenadas por valor
+    const categoryExpenses = Object.values(expensesByCategory)
+      .sort((a, b) => b.amount - a.amount);
+
+    return {
+      summary: {
+        totalBalance: totalBalance,
+        currentIncome: currentIncome,
+        currentExpenses: currentExpenses,
+        currentBalance: currentBalance,
+        variations: {
+          income: calcVariation(currentIncome, previousIncome),
+          expenses: calcVariation(currentExpenses, previousExpenses),
+          balance: calcVariation(currentBalance, previousBalance),
+          totalBalance: calcVariation(totalBalance, totalBalance), // Placeholder
+        }
+      },
+      categoryExpenses,
+      dailyData: {
+        current: dailyExpenses,
+        previous: previousDailyExpenses,
+      },
+      monthlyData: {
+        current: { income: currentIncome, expenses: currentExpenses },
+        previous: { income: previousIncome, expenses: previousExpenses },
+      },
+      metrics: {
+        transactionCount: currentTransactions.length,
+        averageTransaction: currentTransactions.length > 0 ? 
+          (currentIncome + currentExpenses) / currentTransactions.length : 0,
+        topCategory: categoryExpenses[0] || { name: 'N/A', amount: 0 },
+      }
+    };
+  } catch (error) {
+    console.error('Erro ao buscar dados de relatórios filtrados:', error);
+    return null;
+  }
+}
+
+// Função para obter métricas avançadas filtradas por mês e ano
+export async function getAdvancedMetricsFiltered(month: number, year: number) {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  try {
+    const targetMonth = new Date(year, month - 1, 1);
+    const nextMonth = new Date(year, month, 1);
+
+    // Buscar transações do mês
+    const transactions = await prisma.transaction.findMany({
+      where: { 
+        userId: session.user.id,
+        date: {
+          gte: targetMonth,
+          lt: nextMonth
         }
       },
       include: { category: true },
     });
 
-    // Calcular métricas detalhadas
-    const currentExpenses = currentTransactions
-      .filter(t => (t.category?.type || t.type) === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
+    // Cálculos das métricas
+    const totalTransactions = transactions.length;
+    const expenseTransactions = transactions.filter(t => 
+      (t.category?.type || t.type) === 'expense'
+    );
+    const incomeTransactions = transactions.filter(t => 
+      (t.category?.type || t.type) === 'income'
+    );
+
+    const totalExpenses = expenseTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const totalIncome = incomeTransactions.reduce((sum, t) => sum + t.amount, 0);
     
-    const previousExpenses = previousTransactions
-      .filter(t => (t.category?.type || t.type) === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0);
+    const avgExpensePerTransaction = expenseTransactions.length > 0 ? 
+      totalExpenses / expenseTransactions.length : 0;
+    const avgIncomePerTransaction = incomeTransactions.length > 0 ? 
+      totalIncome / incomeTransactions.length : 0;
 
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const currentDay = now.getDate();
+    // Categoria com mais gastos
+    const expensesByCategory: Record<string, number> = {};
+    expenseTransactions.forEach(t => {
+      const categoryName = t.category?.name || 'Outros';
+      expensesByCategory[categoryName] = (expensesByCategory[categoryName] || 0) + t.amount;
+    });
     
-    const dailyAverage = currentExpenses / currentDay;
-    const weeklyAverage = dailyAverage * 7;
-    const monthlyProjected = dailyAverage * daysInMonth;
+    const topExpenseCategory = Object.entries(expensesByCategory)
+      .sort(([,a], [,b]) => b - a)[0] || ['N/A', 0];
 
-    const previousDaysInMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
-    const previousDailyAverage = previousExpenses / previousDaysInMonth;
-    const previousWeeklyAverage = previousDailyAverage * 7;
+    // Meta de gastos (exemplo: baseada na média dos últimos 3 meses)
+    const threeMonthsAgo = new Date(year, month - 4, 1);
+    const recentTransactions = await prisma.transaction.findMany({
+      where: { 
+        userId: session.user.id,
+        date: {
+          gte: threeMonthsAgo,
+          lt: targetMonth
+        }
+      },
+      include: { category: true },
+    });
 
-    const calcVariation = (current: number, previous: number) => {
+    const recentExpenses = recentTransactions.filter(t => 
+      (t.category?.type || t.type) === 'expense'
+    ).reduce((sum, t) => sum + t.amount, 0);
+    
+    const monthsCount = Math.max(1, (targetMonth.getTime() - threeMonthsAgo.getTime()) / (1000 * 60 * 60 * 24 * 30));
+    const avgMonthlyExpenses = recentExpenses / monthsCount;
+    const spendingGoalProgress = avgMonthlyExpenses > 0 ? (totalExpenses / avgMonthlyExpenses) * 100 : 0;
+
+    // Taxa de poupança
+    const savingsRate = totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome) * 100 : 0;
+
+    // Calcular médias anteriores para comparação (mês anterior)
+    const previousTargetMonth = new Date(year, month - 2, 1);
+    const currentTargetMonth = new Date(year, month - 1, 1);
+    
+    const previousTransactions = await prisma.transaction.findMany({
+      where: { 
+        userId: session.user.id,
+        date: {
+          gte: previousTargetMonth,
+          lt: currentTargetMonth
+        }
+      },
+      include: { category: true },
+    });
+
+    const previousExpenseTransactions = previousTransactions.filter(t => 
+      (t.category?.type || t.type) === 'expense'
+    );
+    const previousIncomeTransactions = previousTransactions.filter(t => 
+      (t.category?.type || t.type) === 'income'
+    );
+
+    const previousTotalExpenses = previousExpenseTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const previousTotalIncome = previousIncomeTransactions.reduce((sum, t) => sum + t.amount, 0);
+    
+    const previousAvgExpensePerTransaction = previousExpenseTransactions.length > 0 ? 
+      previousTotalExpenses / previousExpenseTransactions.length : 0;
+    const previousAvgIncomePerTransaction = previousIncomeTransactions.length > 0 ? 
+      previousTotalIncome / previousIncomeTransactions.length : 0;
+
+    // Função para calcular variação
+    const calcChange = (current: number, previous: number): number => {
       if (previous === 0) return current > 0 ? 100 : 0;
       return ((current - previous) / previous) * 100;
     };
+
+    // Calcular média diária
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const dailyAverage = totalExpenses / daysInMonth;
+    const previousDaysInMonth = new Date(year, month - 1, 0).getDate();
+    const previousDailyAverage = previousTotalExpenses / previousDaysInMonth;
+
+    // Calcular média semanal (aproximadamente 4.3 semanas por mês)
+    const weeklyAverage = totalExpenses / 4.3;
+    const previousWeeklyAverage = previousTotalExpenses / 4.3;
 
     return {
       dailyAverage: {
         current: dailyAverage,
         previous: previousDailyAverage,
-        change: calcVariation(dailyAverage, previousDailyAverage),
+        change: calcChange(dailyAverage, previousDailyAverage)
       },
       weeklyAverage: {
         current: weeklyAverage,
         previous: previousWeeklyAverage,
-        change: calcVariation(weeklyAverage, previousWeeklyAverage),
+        change: calcChange(weeklyAverage, previousWeeklyAverage)
       },
       monthlyTotal: {
-        current: currentExpenses,
-        previous: previousExpenses,
-        change: calcVariation(currentExpenses, previousExpenses),
+        current: totalExpenses,
+        previous: previousTotalExpenses,
+        change: calcChange(totalExpenses, previousTotalExpenses)
       },
       transactionCount: {
-        current: currentTransactions.length,
+        current: totalTransactions,
         previous: previousTransactions.length,
-        change: calcVariation(currentTransactions.length, previousTransactions.length),
-      },
+        change: calcChange(totalTransactions, previousTransactions.length)
+      }
     };
   } catch (error) {
-    console.error('Erro ao buscar métricas avançadas:', error);
+    console.error('Erro ao buscar métricas avançadas filtradas:', error);
     return null;
   }
 }
 
-export async function getMonthlyChartData() {
+// Função para obter dados do gráfico mensal filtrados por ano
+export async function getMonthlyChartDataFiltered(year: number) {
   const session = await auth();
   if (!session?.user?.id) return null;
 
   try {
-    const now = new Date();
-    const monthsData = [];
+    const startOfYear = new Date(year, 0, 1);
+    const endOfYear = new Date(year + 1, 0, 1);
 
-    // Buscar dados dos últimos 6 meses
-    for (let i = 5; i >= 0; i--) {
-      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-      
-      const transactions = await prisma.transaction.findMany({
-        where: {
-          userId: session.user.id,
-          date: {
-            gte: monthStart,
-            lt: monthEnd
-          }
-        },
-        include: { category: true },
-      });
-
-      let income = 0;
-      let expenses = 0;
-
-      transactions.forEach(transaction => {
-        const type = transaction.category?.type || transaction.type;
-        if (type === 'income') {
-          income += transaction.amount;
-        } else if (type === 'expense') {
-          expenses += transaction.amount;
+    const transactions = await prisma.transaction.findMany({
+      where: { 
+        userId: session.user.id,
+        date: {
+          gte: startOfYear,
+          lt: endOfYear
         }
-      });
+      },
+      include: { category: true },
+      orderBy: { date: 'asc' }
+    });
 
-      monthsData.push({
-        month: monthStart.toLocaleDateString('pt-BR', { month: 'short' }),
-        income,
-        expenses,
-      });
+    // Agrupar por mês
+    const monthlyData: Record<string, { income: number; expense: number }> = {};
+    
+    for (let month = 0; month < 12; month++) {
+      const monthKey = new Date(year, month).toLocaleDateString('pt-BR', { month: 'short' });
+      monthlyData[monthKey] = { income: 0, expense: 0 };
     }
 
-    return monthsData;
+    transactions.forEach(transaction => {
+      const month = transaction.date.toLocaleDateString('pt-BR', { month: 'short' });
+      const type = transaction.category?.type || transaction.type;
+      
+      if (type === 'income') {
+        monthlyData[month].income += transaction.amount;
+      } else if (type === 'expense') {
+        monthlyData[month].expense += transaction.amount;
+      }
+    });
+
+    return Object.entries(monthlyData).map(([month, data]) => ({
+      month,
+      income: data.income,
+      expenses: data.expense
+    }));
   } catch (error) {
-    console.error('Erro ao buscar dados do gráfico mensal:', error);
-    return [];
+    console.error('Erro ao buscar dados do gráfico mensal filtrados:', error);
+    return null;
   }
 }
 
-export async function getExpensesChartData() {
+// Função para obter dados de despesas por categoria filtrados por mês e ano
+export async function getExpensesChartDataFiltered(month: number, year: number) {
   const session = await auth();
   if (!session?.user?.id) return [];
 
   try {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    
-    // Início e fim do mês atual
-    const startOfMonth = new Date(currentYear, currentMonth, 1);
-    const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
+    const targetMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59);
 
     // Buscar todas as transações de despesa do mês atual
     const expenseTransactions = await prisma.transaction.findMany({
       where: {
         userId: session.user.id,
         date: {
-          gte: startOfMonth,
+          gte: targetMonth,
           lte: endOfMonth,
         },
         OR: [
@@ -875,4 +1073,27 @@ export async function getExpensesChartData() {
     console.error('Erro ao buscar dados de despesas por categoria:', error);
     return [];
   }
+}
+
+export async function getAdvancedMetrics() {
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  
+  return await getAdvancedMetricsFiltered(currentMonth, currentYear);
+}
+
+export async function getMonthlyChartData() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  
+  return await getMonthlyChartDataFiltered(currentYear);
+}
+
+export async function getExpensesChartData() {
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+  
+  return await getExpensesChartDataFiltered(currentMonth, currentYear);
 }
