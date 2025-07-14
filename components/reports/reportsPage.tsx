@@ -19,8 +19,6 @@ import type { ReportsData, AdvancedMetricsData, MonthlyChartDataItem } from "@/l
 
 import { useRouter, useSearchParams } from "next/navigation"
 
-// ...existing code...
-
 interface ReportsPageProps {
   reportsData: ReportsData | null;
   advancedMetrics: AdvancedMetricsData | null;

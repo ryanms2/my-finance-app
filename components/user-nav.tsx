@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { NotificationsDropdown } from "@/components/notifications-dropdown"
+import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown"
 import { auth } from "@/app/auth"
 
 export async function UserNav() {
@@ -18,7 +18,7 @@ export async function UserNav() {
 
   return (
     <div className="flex items-center gap-2 sm:gap-4">
-      {/* <NotificationsDropdown /> */}
+      <NotificationsDropdown />
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
