@@ -14,6 +14,17 @@ import { notificationTemplates } from './templates'
 import { revalidatePath } from 'next/cache'
 
 /**
+ * Helper para revalidar todas as páginas que podem ser afetadas por notificações/transações
+ */
+function revalidateFinancePages() {
+  revalidatePath('/dashboard')
+  revalidatePath('/transactions')
+  revalidatePath('/wallets')
+  revalidatePath('/budgets')
+  revalidatePath('/(main)', 'layout')
+}
+
+/**
  * Cria uma nova notificação
  */
 export async function createNotification(
@@ -62,10 +73,6 @@ export async function createNotification(
       actionUrl: notification.actionUrl || undefined,
       actionText: notification.actionText || undefined,
     }
-
-    // Revalidar cache das notificações
-    revalidatePath('/dashboard')
-    revalidatePath('/(main)', 'layout')
 
     return notificationData
   } catch (error) {
@@ -152,8 +159,7 @@ export async function markNotificationAsRead(notificationId: string): Promise<bo
       },
     })
 
-    revalidatePath('/dashboard')
-    revalidatePath('/(main)', 'layout')
+    revalidateFinancePages()
     return true
   } catch (error) {
     console.error('Erro ao marcar notificação como lida:', error)
@@ -180,8 +186,7 @@ export async function markAllNotificationsAsRead(): Promise<boolean> {
       },
     })
 
-    revalidatePath('/dashboard')
-    revalidatePath('/(main)', 'layout')
+    revalidateFinancePages()
     return true
   } catch (error) {
     console.error('Erro ao marcar todas as notificações como lidas:', error)
@@ -197,15 +202,14 @@ export async function deleteNotification(notificationId: string): Promise<boolea
     const session = await auth()
     if (!session?.user?.id) return false
 
-    await prisma.notification.deleteMany({
+    await prisma.notification.delete({
       where: {
         id: notificationId,
         userId: session.user.id,
       },
     })
 
-    revalidatePath('/dashboard')
-    revalidatePath('/(main)', 'layout')
+    revalidateFinancePages()
     return true
   } catch (error) {
     console.error('Erro ao deletar notificação:', error)

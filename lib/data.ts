@@ -3,7 +3,19 @@ import { auth } from "@/app/auth";
 import { prisma } from "@/utils/prisma/prisma";
 import { z } from "zod";
 import { formSchemaAccount, formSchemaTransaction, formSchemaTransfer } from "./types";
+import { revalidatePath } from 'next/cache';
   
+/**
+ * Helper para revalidar todas as páginas que podem ser afetadas por mudanças financeiras
+ */
+function revalidateFinancePages() {
+  revalidatePath('/dashboard')
+  revalidatePath('/transactions')
+  revalidatePath('/wallets')
+  revalidatePath('/budgets')
+  revalidatePath('/(main)', 'layout')
+}
+
 type WalletFormValues = z.infer<typeof formSchemaAccount>;
 type TransactionFormValues = z.infer<typeof formSchemaTransaction>
 type TransferFormValues = z.infer<typeof formSchemaTransfer>
@@ -52,7 +64,7 @@ export async function createAccount(account: WalletFormValues) {
       }
     })
     
-    
+    revalidateFinancePages()
     return true
   } catch (error) {
     console.error(error)
@@ -93,6 +105,7 @@ export async function createTransaction(transaction: TransactionFormValues) {
     },
   })
 
+  revalidateFinancePages()
   return true
   } catch (error) {
     console.error(error)
@@ -140,6 +153,7 @@ export async function createBudget(budgetData: { categoryId: string; amount: num
       },
     });
 
+    revalidateFinancePages()
     return true;
   } catch (error) {
     console.error('Erro ao criar orçamento:', error);
@@ -165,6 +179,7 @@ export async function updateBudget(budgetId: string, amount: number) {
       },
     });
 
+    revalidateFinancePages()
     return true;
   } catch (error) {
     console.error('Erro ao atualizar orçamento:', error);
@@ -270,6 +285,7 @@ export async function deleteBudget(budgetId: string) {
       },
     });
 
+    revalidateFinancePages()
     return true;
   } catch (error) {
     console.error('Erro ao deletar orçamento:', error);
@@ -368,6 +384,7 @@ export async function createTransfer(transfer: TransferFormValues) {
       });
     });
 
+    revalidateFinancePages()
     return true
   } catch (error) {
     console.error(error)
@@ -426,6 +443,7 @@ export async function updateTransaction(transactionId: string, transaction: Tran
       }
     });
 
+    revalidateFinancePages()
     return true;
   } catch (error) {
     console.error("Erro ao atualizar transação:", error);
@@ -458,6 +476,7 @@ export async function deleteTransaction(transactionId: string) {
       where: { id: transactionId }
     });
 
+    revalidateFinancePages()
     return true;
   } catch (error) {
     console.error("Erro ao deletar transação:", error);

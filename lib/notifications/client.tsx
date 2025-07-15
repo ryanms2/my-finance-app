@@ -71,14 +71,8 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
             const reallyNew = newNotifications.filter((n: NotificationData) => !existingIds.has(n.id))
             
             if (reallyNew.length > 0) {
-              // Mostrar toast para as novas
+              // Chamar callbacks registrados para notificações novas
               reallyNew.forEach((notification: NotificationData) => {
-                toast(notification.title, {
-                  description: notification.message,
-                  duration: 5000,
-                })
-                
-                // Chamar callbacks registrados
                 notificationCallbacks.forEach(callback => {
                   try {
                     callback(notification)
