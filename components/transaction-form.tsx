@@ -27,11 +27,8 @@ import { cn } from "@/lib/utils"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { useSession } from "next-auth/react"
 import { toast } from "sonner"
-import { createTransaction, getAccount } from "@/lib/data"
-import { categories, Category, formSchemaAccount, formSchemaTransaction, TransactionFormProps } from "@/lib/types"
-import { useFormState } from "react-dom"
+import { Category, formSchemaAccount, formSchemaTransaction, TransactionFormProps } from "@/lib/types"
 import { createTransactionAction } from "@/lib/dashboardActions/transactionActions"
 
 type TransactionFormValues = z.infer<typeof formSchemaTransaction>

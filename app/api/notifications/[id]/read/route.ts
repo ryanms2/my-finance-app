@@ -8,7 +8,7 @@ interface Params {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     const session = await auth()
@@ -16,7 +16,8 @@ export async function POST(
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const success = await markNotificationAsRead(params.id)
+    const { id } = await params
+    const success = await markNotificationAsRead(id)
     
     if (success) {
       return NextResponse.json({ success: true })

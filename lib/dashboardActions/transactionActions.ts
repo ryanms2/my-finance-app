@@ -7,7 +7,6 @@ import { formSchemaTransaction, formSchemaTransactionEdit } from "@/lib/types";
 import { notificationHelpers } from "@/lib/notifications/manager";
 import { prisma } from "@/utils/prisma/prisma";
 import { z } from "zod";
-import { revalidatePath } from "next/cache";
 
 type TransactionFormValues = z.infer<typeof formSchemaTransaction>
 type TransactionEditFormValues = z.infer<typeof formSchemaTransactionEdit>
