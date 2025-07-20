@@ -16,6 +16,7 @@ import { useNotifications } from "@/lib/notifications/client"
 import { getNotificationIcon, getPriorityColor } from "@/lib/notifications/templates"
 import { formatDistanceToNow } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import Link from "next/link"
 
 export function NotificationsDropdown() {
   const {
@@ -168,10 +169,13 @@ export function NotificationsDropdown() {
 
         <DropdownMenuSeparator className="bg-gray-800" />
         
-        <DropdownMenuItem className="cursor-pointer">
-          <Settings className="h-4 w-4 mr-2" />
-          Configurações de Notificação
-        </DropdownMenuItem>
+        <Link href={"/settings"}>
+          <DropdownMenuItem className="cursor-pointer">
+            <Settings className="h-4 w-4 mr-2" />
+            Configurações de Notificação
+          </DropdownMenuItem>
+        </Link>
+        
       </DropdownMenuContent>
     </DropdownMenu>
   )

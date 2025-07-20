@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ProfileForm } from "@/components/settings/ProfileForm"
 import { DeleteAccount } from "@/components/settings/DeleteAccount"
+import { NotificationSettings } from "../notifications/NotificationSettings"
 
 interface User {
   id: string;
@@ -139,7 +140,7 @@ export function SettingsPage({ user }: SettingsPageProps) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-4">
+                  {/* <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Alertas de Orçamento</p>
@@ -171,14 +172,15 @@ export function SettingsPage({ user }: SettingsPageProps) {
                       </div>
                       <Switch defaultChecked />
                     </div>
-                  </div>
+                  </div> */}
+                  <NotificationSettings />
                 </CardContent>
-                <CardFooter className="flex justify-end">
+                {/* <CardFooter className="flex justify-end">
                   <Button className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
                     <Save className="mr-2 h-4 w-4" />
                     Salvar Preferências
                   </Button>
-                </CardFooter>
+                </CardFooter> */}
               </Card>
             </TabsContent>
           </Tabs>
