@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown"
 import { auth } from "@/app/auth"
+import Link from "next/link"
 
 export async function UserNav() {
   const session = await auth()
@@ -37,9 +38,9 @@ export async function UserNav() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>Perfil</DropdownMenuItem>
-            <DropdownMenuItem>Configurações</DropdownMenuItem>
-            <DropdownMenuItem>Sobre o Projeto</DropdownMenuItem>
+            <Link href="/settings">
+              <DropdownMenuItem>Configurações</DropdownMenuItem>
+            </Link>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem>Sair</DropdownMenuItem>
