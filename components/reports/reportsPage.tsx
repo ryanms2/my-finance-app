@@ -15,6 +15,7 @@ import { MonthlySpendingChart } from "@/components/monthly-spending-chart"
 import { ExpensesDonutChart } from "@/components/expenses-donut-chart"
 import { AdvancedMetrics } from "@/components/advanced-metrics"
 import { ComparisonChart } from "@/components/comparison-chart"
+import { ExportDialog } from "@/components/export-dialog"
 import type { ReportsData, AdvancedMetricsData, MonthlyChartDataItem } from "@/lib/types"
 
 import { useRouter, useSearchParams } from "next/navigation"
@@ -105,10 +106,12 @@ export function ReportsPage({
               disabled={isPending}
               className="hidden sm:flex"
             />
-            <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
-              <Download className="h-4 w-4" />
-              Exportar
-            </Button>
+            <ExportDialog defaultType="reports">
+              <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
+                <Download className="h-4 w-4" />
+                Exportar
+              </Button>
+            </ExportDialog>
             <UserNavClient user={user} />
           </div>
         </header>

@@ -8,6 +8,7 @@ import { UserNav } from "@/components/user-nav"
 import { MobileNav } from "@/components/mobile-nav"
 import { MobileMenu } from "@/components/mobile-menu"
 import { ExpensesDonutChart } from "@/components/expenses-donut-chart"
+import { ExportDialog } from "@/components/export-dialog"
 
 interface Budget {
   id: string
@@ -61,10 +62,12 @@ export function BudgetsPage({ budgets, summary }: BudgetsPageProps) {
               <Plus className="h-4 w-4" />
               Novo Orçamento
             </Button>
-            <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
-              <Download className="h-4 w-4" />
-              Exportar
-            </Button>
+            <ExportDialog defaultType="budgets">
+              <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
+                <Download className="h-4 w-4" />
+                Exportar
+              </Button>
+            </ExportDialog>
             <UserNav />
           </div>
         </header>
@@ -80,7 +83,11 @@ export function BudgetsPage({ budgets, summary }: BudgetsPageProps) {
               </CardHeader>
               <CardContent className="flex flex-col md:flex-row items-center gap-6">
                 <div className="w-full md:w-1/2 max-w-[300px] mx-auto">
-                  <ExpensesDonutChart data={summary?.chartData} />
+                  <ExpensesDonutChart data={summary?.chartData?.map(item => ({
+                    name: item.label,
+                    amount: item.value,
+                    color: item.color || '#6B7280'
+                  }))} />
                 </div>
                 <div className="w-full md:w-1/2 space-y-4">
                   <div className="flex justify-between items-center">

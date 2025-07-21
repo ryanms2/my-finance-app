@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { UserNavClient } from '../user-nav-client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Sidebar } from '../sidebar';
+import { ExportDialog } from '../export-dialog';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { TransactionData, TransactionsData, TransactionsSummary, Wallet, Category } from '@/lib/types';
 
@@ -95,10 +96,16 @@ export function TransactionsPage({
                 account={wallets}
                 categories={categories}
                 />
-                <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
-                <Download className="h-4 w-4" />
-                Exportar
-                </Button>
+                <ExportDialog 
+                  defaultType="transactions"
+                  availableWallets={wallets ? wallets.map(w => ({ id: w.id, name: w.name })) : []}
+                  availableCategories={categories ? categories.map(c => ({ id: c.id, name: c.name, type: c.type })) : []}
+                >
+                  <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
+                    <Download className="h-4 w-4" />
+                    Exportar
+                  </Button>
+                </ExportDialog>
                 <UserNavClient user={user} />
             </div>
             </header>

@@ -12,6 +12,7 @@ import { TransactionForm } from "@/components/transaction-form"
 import { CardsSummary } from "@/components/dashboard/cards-summary"
 import { Wallets } from "@/components/dashboard/wallets"
 import { MonthlyExpenses } from "@/components/dashboard/monthly-expenses"
+import { ExportDialog } from "@/components/export-dialog"
 import { getAccount, getCategoriesUser } from "@/lib/data"
 import { getDashboardSummary, getBudgetsData, getMonthlyChartData, getExpensesChartData } from "@/lib/extra"
 
@@ -54,10 +55,20 @@ export default async function Dashboard() {
               account={wallets}
               categories={categories}
             />
-            <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
-              <Download className="h-4 w-4" />
-              Exportar
-            </Button>
+            <ExportDialog 
+              defaultType="transactions"
+              availableWallets={wallets ? wallets.map(w => ({ id: w.id, name: w.name })) : []}
+              availableCategories={categories ? categories.map(c => ({ 
+                id: c.id, 
+                name: c.name, 
+                type: c.type as 'income' | 'expense' 
+              })) : []}
+            >
+              <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
+                <Download className="h-4 w-4" />
+                Exportar
+              </Button>
+            </ExportDialog>
             <UserNav />
           </div>
         </header>

@@ -13,6 +13,7 @@ import { WalletCard } from "@/components/wallet-card"
 import { WalletOverview } from "@/components/wallet-overview"
 import { TransferForm } from "@/components/transfer-form"
 import { TransferHistory } from "@/components/transfer-history"
+import { ExportDialog } from "@/components/export-dialog"
 
 // Tipo simplificado para as carteiras no TransferForm
 type TransferWallet = {
@@ -89,10 +90,12 @@ export function WalletsPage({ wallets, summary, transferHistory }: WalletsPagePr
               size="sm"
               className="hidden sm:flex gap-1 text-green-400 border-green-400/20 hover:bg-green-400/10"
             />
-            <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
-              <Download className="h-4 w-4" />
-              Exportar
-            </Button>
+            <ExportDialog defaultType="wallets">
+              <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
+                <Download className="h-4 w-4" />
+                Exportar
+              </Button>
+            </ExportDialog>
             <UserNav />
           </div>
         </header>
