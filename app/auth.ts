@@ -19,6 +19,17 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     newUser: "/dashboard",
     verifyRequest: "/signin",
   },
+  callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      return true
+    },
+    async redirect({ url, baseUrl }) {
+      // Se a URL já é absoluta e válida, use ela
+      if (url.startsWith("http")) return url
+      // Senão, use a baseUrl configurada
+      return baseUrl
+    },
+  },
   events: {
     async createUser({ user }) {
       if (user.id) await createDefaultCategoriesForUser(user.id);

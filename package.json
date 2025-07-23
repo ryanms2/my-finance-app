@@ -2,6 +2,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:network": "node scripts/setup-network.js network && next dev -H 0.0.0.0",
+    "dev:localhost": "node scripts/setup-network.js localhost && next dev",
     "build": "next build",
     "start": "next start"
   },
