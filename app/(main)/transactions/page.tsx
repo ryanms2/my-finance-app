@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { TransactionsPage } from "@/components/transactions/transactionPage"
-import { getTransactionsData, getTransactionsSummary } from "@/lib/extra"
+import { getTransactionsData, getTransactionsSummary, getTransactionsDataFiltered, getTransactionsSummaryFiltered } from "@/lib/extra"
 import { getAccount, getCategoriesUser } from "@/lib/data"
 import { auth } from "@/app/auth"
 
@@ -12,17 +12,27 @@ export const metadata: Metadata = {
 export default async function Transactions({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string; search?: string; page?: string }>
+  searchParams: Promise<{ type?: string; search?: string; page?: string; month?: string; year?: string }>
 }) {
   try {
     const params = await searchParams;
     const type = params.type as 'income' | 'expense' | 'all' || 'all';
     const search = params.search || '';
     const page = parseInt(params.page || '1');
+    const month = params.month ? parseInt(params.month) : new Date().getMonth() + 1;
+    const year = params.year ? parseInt(params.year) : new Date().getFullYear();
+
+    // Validar parâmetros de mês e ano
+    const isValidMonth = month >= 1 && month <= 12;
+    const isValidYear = year >= 2020 && year <= 2030;
 
     const [transactionsData, summary, walletsRaw, categoriesRaw, session] = await Promise.all([
-      getTransactionsData({ type, search, page }),
-      getTransactionsSummary(),
+      isValidMonth && isValidYear 
+        ? getTransactionsDataFiltered(month, year, { type, search, page })
+        : getTransactionsData({ type, search, page }),
+      isValidMonth && isValidYear 
+        ? getTransactionsSummaryFiltered(month, year)
+        : getTransactionsSummary(),
       getAccount(),
       getCategoriesUser(),
       auth()
@@ -60,12 +70,15 @@ export default async function Transactions({
         wallets={wallets}
         categories={categories}
         filters={{ type, search, page }}
+        selectedMonth={month}
+        selectedYear={year}
         user={session?.user}
       />
     )
   } catch (error) {
     console.error('Erro na página de transações:', error);
     // Retornar uma página de erro ou dados vazios
+    const now = new Date();
     return (
       <TransactionsPage 
         transactionsData={{
@@ -76,6 +89,8 @@ export default async function Transactions({
         wallets={false}
         categories={false}
         filters={{ type: 'all', search: '', page: 1 }}
+        selectedMonth={now.getMonth() + 1}
+        selectedYear={now.getFullYear()}
         user={undefined}
       />
     )

@@ -463,6 +463,136 @@ export async function getTransactionsData(filters?: {
   }
 }
 
+// Função para buscar transações filtradas por mês e ano
+export async function getTransactionsDataFiltered(month: number, year: number, filters?: {
+  type?: 'income' | 'expense' | 'all'
+  search?: string
+  page?: number
+  limit?: number
+}) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      transactions: [],
+      pagination: {
+        page: 1,
+        limit: 50,
+        total: 0,
+        totalPages: 0,
+      },
+    };
+  }
+
+  try {
+    const { type = 'all', search = '', page = 1, limit = 50 } = filters || {};
+    
+    // Validar parâmetros
+    const validPage = Math.max(1, page);
+    const validLimit = Math.min(Math.max(1, limit), 100);
+    
+    // Calcular datas do mês - usar UTC para evitar problemas de timezone
+    const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
+    const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+    
+    // Construir condições de filtro com índices otimizados
+    const whereConditions: any = {
+      userId: session.user.id,
+      date: {
+        gte: startOfMonth,
+        lte: endOfMonth,
+      },
+    };
+
+    // Filtro por tipo
+    if (type !== 'all') {
+      whereConditions.type = type;
+    }
+
+    // Filtro de busca por descrição - compatível com SQLite e PostgreSQL
+    if (search && search.trim()) {
+      whereConditions.description = {
+        contains: search.trim(),
+      };
+    }
+
+    // Usar Promise.all para paralelizar as consultas
+    const [transactions, totalCount] = await Promise.all([
+      prisma.transaction.findMany({
+        where: whereConditions,
+        include: {
+          account: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            }
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              icon: true,
+              color: true,
+            }
+          },
+        },
+        orderBy: [
+          { date: 'desc' },
+          { createdAt: 'desc' } // Ordenação secundária para consistência
+        ],
+        skip: (validPage - 1) * validLimit,
+        take: validLimit,
+      }),
+      prisma.transaction.count({
+        where: whereConditions,
+      })
+    ]);
+
+    const formattedTransactions = transactions.map(transaction => ({
+      id: transaction.id,
+      description: transaction.description,
+      amount: transaction.amount,
+      type: transaction.type,
+      date: transaction.date.toISOString().split('T')[0],
+      category: {
+        id: transaction.category.id,
+        name: transaction.category.name,
+        type: transaction.category.type,
+        icon: transaction.category.icon,
+        color: transaction.category.color,
+      },
+      account: {
+        id: transaction.account.id,
+        name: transaction.account.name,
+        type: transaction.account.type,
+      },
+      createdAt: transaction.createdAt,
+    }));
+
+    return {
+      transactions: formattedTransactions,
+      pagination: {
+        page: validPage,
+        limit: validLimit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / validLimit),
+      },
+    };
+  } catch (error) {
+    console.error('Erro ao buscar transações filtradas:', error);
+    return {
+      transactions: [],
+      pagination: {
+        page: 1,
+        limit: 50,
+        total: 0,
+        totalPages: 0,
+      },
+    };
+  }
+}
+
 export async function getTransactionsSummary() {
   const session = await auth();
   if (!session?.user?.id) return null;
@@ -529,6 +659,77 @@ export async function getTransactionsSummary() {
     };
   } catch (error) {
     console.error('Erro ao buscar resumo das transações:', error);
+    return null;
+  }
+}
+
+// Função para buscar resumo das transações filtrado por mês e ano
+export async function getTransactionsSummaryFiltered(month: number, year: number) {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  try {
+    // Calcular datas do mês
+    const startOfMonth = new Date(year, month - 1, 1);
+    const endOfMonth = new Date(year, month, 0, 23, 59, 59);
+
+    // Buscar transações do mês especificado
+    const monthlyTransactions = await prisma.transaction.findMany({
+      where: {
+        userId: session.user.id,
+        date: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      include: {
+        category: true,
+      },
+    });
+
+    // Calcular totais
+    const totalIncome = monthlyTransactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalExpenses = monthlyTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const balance = totalIncome - totalExpenses;
+
+    // Contadores por tipo
+    const incomeCount = monthlyTransactions.filter(t => t.type === 'income').length;
+    const expenseCount = monthlyTransactions.filter(t => t.type === 'expense').length;
+    const totalCount = monthlyTransactions.length;
+
+    // Transações por categoria (top 5)
+    const expensesByCategory = monthlyTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((acc, transaction) => {
+        const categoryName = transaction.category.name;
+        acc[categoryName] = (acc[categoryName] || 0) + transaction.amount;
+        return acc;
+      }, {} as Record<string, number>);
+
+    const topCategories = Object.entries(expensesByCategory)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+      .map(([name, amount]) => ({ name, amount }));
+
+    return {
+      monthly: {
+        totalIncome,
+        totalExpenses,
+        balance,
+        incomeCount,
+        expenseCount,
+        totalCount,
+      },
+      topCategories,
+    };
+  } catch (error) {
+    console.error('Erro ao buscar resumo das transações filtrado:', error);
     return null;
   }
 }

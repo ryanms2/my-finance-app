@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Search, Filter, Download } from 'lucide-react';
@@ -11,6 +11,7 @@ import { TransactionsTable } from '../transactions-table';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { UserNavClient } from '../user-nav-client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { MonthYearPicker } from '../ui/month-year-picker';
 import { Sidebar } from '../sidebar';
 import { ExportDialog } from '../export-dialog';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -28,6 +29,8 @@ interface TransactionsPageProps {
   wallets: Wallet[] | false;
   categories: Category[] | false;
   filters: Filters;
+  selectedMonth: number;
+  selectedYear: number;
   user?: {
     id?: string;
     name?: string | null;
@@ -42,11 +45,32 @@ export function TransactionsPage({
   wallets, 
   categories, 
   filters,
+  selectedMonth: initialMonth,
+  selectedYear: initialYear,
   user
 }: TransactionsPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchValue, setSearchValue] = useState(filters.search);
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth);
+  const [selectedYear, setSelectedYear] = useState(initialYear);
+  const [isPending, startTransition] = useTransition();
+
+  // Função para lidar com mudança de filtro de data
+  const handleDateFilterChange = (value: { month: number; year: number }) => {
+    if (value.month === selectedMonth && value.year === selectedYear) return;
+
+    setSelectedMonth(value.month);
+    setSelectedYear(value.year);
+
+    startTransition(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('month', value.month.toString());
+      params.set('year', value.year.toString());
+      params.delete('page'); // Reset to first page when changing date
+      router.push(`/transactions?${params.toString()}`);
+    });
+  };
 
   const handleTabChange = (value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -85,10 +109,24 @@ export function TransactionsPage({
         <MobileMenu />
         <div className="flex-1 overflow-auto pb-20 lg:pb-0">
             <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-800 bg-gray-950/80 px-4 sm:px-6 backdrop-blur-md">
-            <div className="flex items-center">
+            <div className="flex items-center gap-3">
                 <h1 className="text-xl font-bold ml-10 lg:ml-0">Transações</h1>
+                {/* Mobile month picker */}
+                <MonthYearPicker
+                  value={{ month: selectedMonth, year: selectedYear }}
+                  onChange={handleDateFilterChange}
+                  disabled={isPending}
+                  className="sm:hidden"
+                />
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
+                {/* Desktop month picker */}
+                <MonthYearPicker
+                  value={{ month: selectedMonth, year: selectedYear }}
+                  onChange={handleDateFilterChange}
+                  disabled={isPending}
+                  className="hidden sm:flex"
+                />
                 <TransactionForm
                 variant="outline"
                 size="sm"
