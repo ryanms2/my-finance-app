@@ -58,6 +58,7 @@ export function WalletForm({
   size = "default",
 }: WalletFormProps) {
   const [open, setOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<WalletFormValues>({
     resolver: zodResolver(formSchemaAccount),
@@ -78,14 +79,21 @@ export function WalletForm({
   function onSubmit(values: WalletFormValues) {
     // lógica para salvar a carteira
       const createAccountInDb = async () => {
-        const createNewAccount = await createAccount(values);
-        if (createNewAccount) {
-          toast.success("Carteira criada com sucesso");
-          form.reset();
-          setOpen(false);
-        }
-        else {
+        setIsSubmitting(true);
+        try {
+          const createNewAccount = await createAccount(values);
+          if (createNewAccount) {
+            toast.success("Carteira criada com sucesso");
+            form.reset();
+            setOpen(false);
+          }
+          else {
+            toast.error("Erro ao criar carteira");
+          }
+        } catch (error) {
           toast.error("Erro ao criar carteira");
+        } finally {
+          setIsSubmitting(false);
         }
       }
       createAccountInDb();
@@ -104,21 +112,21 @@ export function WalletForm({
         )}
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-[425px] max-w-[95vw] bg-gray-900 border-gray-800 text-white flex flex-col max-h-[95vh] p-0"
-        style={{ maxHeight: "95vh", padding: 0 }}
+        className="sm:max-w-[425px] max-w-[95vw] bg-gray-900 border-gray-800 text-white flex flex-col max-h-[95vh]"
       >
-        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex-shrink-0">
           <DialogTitle className="text-lg sm:text-xl">Adicionar Carteira</DialogTitle>
           <DialogDescription className="text-gray-400 text-sm">
             Adicione uma nova carteira ou conta para gerenciar suas finanças.
           </DialogDescription>
         </DialogHeader>
-        <div className="overflow-y-auto px-4 sm:px-6 pb-2 flex-1" style={{ maxHeight: "calc(95vh - 100px)" }}>
+        
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6">
           <Form {...form}>
             <form
               ref={formRef}
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-3 sm:space-y-4"
+              className="space-y-3 sm:space-y-4 pb-4"
             >
               <FormField
                 control={form.control}
@@ -346,29 +354,38 @@ export function WalletForm({
                   </FormItem>
                 )}
               />
-              {/* DialogFooter is now outside the scrollable area */}
             </form>
           </Form>
         </div>
-        <DialogFooter className="pt-3 sm:pt-4 px-4 sm:px-6 pb-4 sm:pb-6 bg-gray-900 border-t border-gray-800 sticky bottom-0 z-10 flex-col sm:flex-row gap-2 sm:gap-0">
+        
+        <DialogFooter className="px-4 sm:px-6 py-4 bg-gray-900 border-t border-gray-800 flex-shrink-0 flex flex-col sm:flex-row gap-3 sm:gap-2">
           <Button
             type="button"
             variant="outline"
             onClick={() => setOpen(false)}
+            disabled={isSubmitting}
             className="border-gray-700 hover:bg-gray-700 hover:text-white w-full sm:w-auto order-2 sm:order-1"
           >
             Cancelar
           </Button>
           <Button
             type="button"
-            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 w-full sm:w-auto order-1 sm:order-2"
+            disabled={isSubmitting}
+            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 w-full sm:w-auto order-1 sm:order-2 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => {
               if (formRef.current) {
                 formRef.current.requestSubmit();
               }
             }}
           >
-            Salvar
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Salvando...
+              </div>
+            ) : (
+              "Salvar"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -7,11 +7,11 @@ export function PageLoadingSkeleton() {
     <div className="flex min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 text-white">
       {/* Sidebar skeleton */}
       <div className="hidden lg:flex w-64 border-r border-gray-800 bg-gray-950/50 backdrop-blur-md">
-        <div className="p-6 w-full">
-          <Skeleton className="h-8 w-32 mb-8" />
+        <div className="p-6 w-full animate-fade-in">
+          <Skeleton className="h-8 w-32 mb-8 animate-shimmer" />
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-10 w-full rounded-lg" />
+              <Skeleton key={i} className={`h-10 w-full rounded-lg animate-shimmer stagger-delay-${i}`} />
             ))}
           </div>
         </div>
@@ -21,12 +21,12 @@ export function PageLoadingSkeleton() {
       <div className="flex-1 overflow-auto pb-20 lg:pb-0">
         {/* Header skeleton */}
         <div className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-800 bg-gray-950/80 px-4 sm:px-6 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-6 w-32" />
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <Skeleton className="h-6 w-32 animate-shimmer" />
           </div>
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-9 w-24 hidden sm:block" />
-            <Skeleton className="h-9 w-9 rounded-full" />
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Skeleton className="h-9 w-24 hidden sm:block animate-shimmer stagger-delay-1" />
+            <Skeleton className="h-9 w-9 rounded-full animate-pulse-subtle stagger-delay-2" />
           </div>
         </div>
 

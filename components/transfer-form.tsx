@@ -34,6 +34,7 @@ interface TransferFormProps {
 
 export function TransferForm({ children, className, variant = "default", size = "default", wallets }: TransferFormProps) {
   const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<TransferFormValues>({
     resolver: zodResolver(formSchemaTransfer),
@@ -60,15 +61,22 @@ export function TransferForm({ children, className, variant = "default", size = 
       return toast.error("Saldo insuficiente na carteira de origem")
     }
 
-    // lógica para salvar a transferência
-    const transfer = await createTransferAction(values)
-    if (transfer.success) {
-      setOpen(false)
-      form.reset()
-      return toast.success("Transferência realizada com sucesso!")
+    setIsSubmitting(true)
+    try {
+      // lógica para salvar a transferência
+      const transfer = await createTransferAction(values)
+      if (transfer.success) {
+        setOpen(false)
+        form.reset()
+        toast.success("Transferência realizada com sucesso!")
+      } else {
+        toast.error(transfer.error)
+      }
+    } catch (error) {
+      toast.error("Erro ao realizar transferência")
+    } finally {
+      setIsSubmitting(false)
     }
-    
-    toast.error(transfer.error)
   }
 
   const formatCurrency = (value: number) => {
@@ -92,16 +100,17 @@ export function TransferForm({ children, className, variant = "default", size = 
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] max-w-[95vw] bg-gray-900 border-gray-800 text-white">
-        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
+      <DialogContent className="sm:max-w-[425px] max-w-[95vw] bg-gray-900 border-gray-800 text-white flex flex-col max-h-[95vh]">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2 flex-shrink-0">
           <DialogTitle className="text-lg sm:text-xl">Transferir entre Carteiras</DialogTitle>
           <DialogDescription className="text-gray-400 text-sm">
             Transfira dinheiro entre suas carteiras de forma rápida e segura.
           </DialogDescription>
         </DialogHeader>
-        <div className="px-4 sm:px-6 pb-2">
+        
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4 pb-4">
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
@@ -194,19 +203,26 @@ export function TransferForm({ children, className, variant = "default", size = 
                 </FormItem>
               )}
             />
-
-            <DialogFooter className="pt-3 sm:pt-4">
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                disabled={form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting ? 'Processando...' : 'Realizar Transferência'}
-              </Button>
-            </DialogFooter>
           </form>
         </Form>
         </div>
+        
+        <DialogFooter className="px-4 sm:px-6 py-4 bg-gray-900 border-t border-gray-800 flex-shrink-0">
+          <Button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Processando...
+              </div>
+            ) : (
+              'Realizar Transferência'
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

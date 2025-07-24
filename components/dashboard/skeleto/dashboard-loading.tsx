@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 
 export function DashboardLoadingSkeleton() {
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 text-white">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 text-white animate-pulse">
       {/* Sidebar skeleton */}
       <div className="hidden lg:flex w-64 border-r border-gray-800 bg-gray-950/50 backdrop-blur-md">
         <div className="p-6 w-full">
-          <Skeleton className="h-8 w-32 mb-8" />
+          <Skeleton className="h-8 w-32 mb-8 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer" />
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
-              <Skeleton key={i} className="h-10 w-full rounded-lg" />
+              <Skeleton key={i} className="h-10 w-full rounded-lg bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 animate-shimmer" style={{ animationDelay: `${i * 150}ms` }} />
             ))}
           </div>
         </div>
@@ -21,34 +21,34 @@ export function DashboardLoadingSkeleton() {
         {/* Header */}
         <div className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-800 bg-gray-950/80 px-4 sm:px-6 backdrop-blur-md">
           <div className="flex items-center">
-            <Skeleton className="h-6 w-32 ml-10 lg:ml-0" />
+            <Skeleton className="h-6 w-32 ml-10 lg:ml-0 animate-shimmer" />
           </div>
           <div className="flex items-center gap-2">
-            <Skeleton className="h-9 w-24 hidden sm:block" />
-            <Skeleton className="h-9 w-9 rounded-full" />
+            <Skeleton className="h-9 w-24 hidden sm:block animate-shimmer stagger-delay-1" />
+            <Skeleton className="h-9 w-9 rounded-full animate-pulse-subtle stagger-delay-2" />
           </div>
         </div>
 
-        <div className="p-4 sm:p-6">
+        <div className="p-4 sm:p-6 animate-fade-in">
           {/* Welcome section */}
           <div className="mb-8">
-            <Skeleton className="h-8 w-64 mb-2" />
-            <Skeleton className="h-4 w-96" />
+            <Skeleton className="h-8 w-64 mb-2 animate-shimmer" />
+            <Skeleton className="h-4 w-96 animate-shimmer stagger-delay-1" />
           </div>
 
           {/* Summary cards */}
           <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="bg-gray-900/50 border-gray-800">
+              <Card key={i} className={`bg-gray-900/50 border-gray-800 animate-fade-in stagger-delay-${i}`}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-5 w-5 rounded" />
+                    <Skeleton className="h-4 w-20 animate-shimmer" />
+                    <Skeleton className="h-5 w-5 rounded animate-pulse-subtle" />
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-8 w-32 mb-2" />
-                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-8 w-32 mb-2 animate-shimmer stagger-delay-1" />
+                  <Skeleton className="h-3 w-full animate-shimmer stagger-delay-2" />
                 </CardContent>
               </Card>
             ))}
