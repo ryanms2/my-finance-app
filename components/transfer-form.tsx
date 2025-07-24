@@ -92,22 +92,23 @@ export function TransferForm({ children, className, variant = "default", size = 
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-gray-900 border-gray-800 text-white">
-        <DialogHeader>
-          <DialogTitle>Transferir entre Carteiras</DialogTitle>
-          <DialogDescription className="text-gray-400">
+      <DialogContent className="sm:max-w-[425px] max-w-[95vw] bg-gray-900 border-gray-800 text-white">
+        <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
+          <DialogTitle className="text-lg sm:text-xl">Transferir entre Carteiras</DialogTitle>
+          <DialogDescription className="text-gray-400 text-sm">
             Transfira dinheiro entre suas carteiras de forma rápida e segura.
           </DialogDescription>
         </DialogHeader>
+        <div className="px-4 sm:px-6 pb-2">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="fromAccountId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Carteira de Origem</FormLabel>
+                    <FormLabel className="text-sm">Carteira de Origem</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-gray-800 border-gray-700 focus-visible:ring-purple-500">
@@ -132,7 +133,7 @@ export function TransferForm({ children, className, variant = "default", size = 
                 name="toAccountId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Carteira de Destino</FormLabel>
+                    <FormLabel className="text-sm">Carteira de Destino</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-gray-800 border-gray-700 focus-visible:ring-purple-500">
@@ -158,7 +159,7 @@ export function TransferForm({ children, className, variant = "default", size = 
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Valor</FormLabel>
+                  <FormLabel className="text-sm">Valor</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -180,12 +181,12 @@ export function TransferForm({ children, className, variant = "default", size = 
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição (opcional)</FormLabel>
+                  <FormLabel className="text-sm">Descrição (opcional)</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Ex: Pagamento de conta..."
                       className="bg-gray-800 border-gray-700 focus-visible:ring-purple-500"
-                      rows={3}
+                      rows={2}
                       {...field}
                     />
                   </FormControl>
@@ -194,7 +195,7 @@ export function TransferForm({ children, className, variant = "default", size = 
               )}
             />
 
-            <DialogFooter className="pt-4">
+            <DialogFooter className="pt-3 sm:pt-4">
               <Button 
                 type="submit" 
                 className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
@@ -205,6 +206,7 @@ export function TransferForm({ children, className, variant = "default", size = 
             </DialogFooter>
           </form>
         </Form>
+        </div>
       </DialogContent>
     </Dialog>
   )

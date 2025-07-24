@@ -150,6 +150,13 @@ export function TransactionsPage({
                   disabled={isPending}
                   className="w-full"
                 />
+                <TransactionForm
+                variant="outline"
+                size="sm"
+                className=" w-full sm:flex gap-1 mt-2 text-green-400 border-green-400/20 hover:bg-green-400/10"
+                account={wallets}
+                categories={categories}
+                />
             </div>
 
             {/* Summary Cards */}

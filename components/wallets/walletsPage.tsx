@@ -101,6 +101,20 @@ export function WalletsPage({ wallets, summary, transferHistory }: WalletsPagePr
         </header>
 
         <main className="p-4 sm:p-6">
+          {/* Mobile month picker */}
+          <div className="sm:hidden mb-4">
+              <TransferForm
+              variant="outline"
+              size="sm"
+              className="w-full sm:flex gap-1 text-blue-400 border-blue-400/20 hover:bg-blue-400/10"
+              wallets={walletsForTransfer}
+              />
+              <WalletForm
+                variant="outline"
+                size="sm"
+                className="w-full sm:flex gap-1 mt-2 text-green-400 border-green-400/20 hover:bg-green-400/10"
+              />
+          </div>
           <WalletOverview 
             totalBalance={summary?.totalBalance ?? 0} 
             activeWallets={summary?.activeWallets ?? 0} 
@@ -111,18 +125,18 @@ export function WalletsPage({ wallets, summary, transferHistory }: WalletsPagePr
             <div className="lg:col-span-2 space-y-6">
               <Tabs defaultValue="all" className="w-full">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                  <TabsList className="bg-gray-800/50">
-                    <TabsTrigger value="all">Todas</TabsTrigger>
-                    <TabsTrigger value="bank">Contas Bancárias</TabsTrigger>
-                    <TabsTrigger value="cards">Cartões</TabsTrigger>
-                    <TabsTrigger value="cash">Dinheiro</TabsTrigger>
+                  <TabsList className="bg-gray-800/50 w-full sm:w-auto">
+                    <TabsTrigger value="all" className="flex-1 sm:flex-none">Todas</TabsTrigger>
+                    <TabsTrigger value="bank" className="flex-1 sm:flex-none">Bancos</TabsTrigger>
+                    <TabsTrigger value="cards" className="flex-1 sm:flex-none">Cartões</TabsTrigger>
+                    <TabsTrigger value="cash" className="flex-1 sm:flex-none">Dinheiro</TabsTrigger>
                   </TabsList>
                 </div>
 
                 <TabsContent value="all" className="mt-0">
-                  <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+                  <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
                     {wallets.length === 0 ? (
-                      <div className="col-span-2 text-center py-12">
+                      <div className="sm:col-span-2 text-center py-12">
                         <div className="h-16 w-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
                           <Plus className="h-8 w-8 text-gray-400" />
                         </div>
@@ -150,7 +164,7 @@ export function WalletsPage({ wallets, summary, transferHistory }: WalletsPagePr
                 </TabsContent>
 
                 <TabsContent value="bank" className="mt-0">
-                  <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+                  <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
                     {wallets
                       .filter((w) => ["bank", "savings"].includes(w.type))
                       .map((wallet) => (
@@ -160,7 +174,7 @@ export function WalletsPage({ wallets, summary, transferHistory }: WalletsPagePr
                 </TabsContent>
 
                 <TabsContent value="cards" className="mt-0">
-                  <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+                  <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
                     {wallets
                       .filter((w) => ["credit", "debit"].includes(w.type))
                       .map((wallet) => (
@@ -170,7 +184,7 @@ export function WalletsPage({ wallets, summary, transferHistory }: WalletsPagePr
                 </TabsContent>
 
                 <TabsContent value="cash" className="mt-0">
-                  <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+                  <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
                     {wallets
                       .filter((w) => w.type === "cash")
                       .map((wallet) => (
@@ -181,13 +195,11 @@ export function WalletsPage({ wallets, summary, transferHistory }: WalletsPagePr
               </Tabs>
             </div>
 
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 mt-6 lg:mt-0">
               <TransferHistory transfers={transferHistory} />
             </div>
           </div>
         </main>
-
-        <MobileNav />
       </div>
     </div>
   )
