@@ -16,7 +16,7 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
   const pathname = usePathname()
 
   const mainNavItems = [
-    { href: "/", icon: Home, label: "Dashboard" },
+    { href: "/dashboard", icon: Home, label: "Dashboard" },
     { href: "/transactions", icon: CreditCard, label: "Transações" },
     { href: "/wallets", icon: Wallet, label: "Carteiras" },
     { href: "/budgets", icon: Wallet, label: "Orçamentos" },
@@ -24,7 +24,6 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
   ]
 
   const secondaryNavItems = [
-    { href: "/investments", icon: PieChart, label: "Investimentos" },
     { href: "/settings", icon: Settings, label: "Configurações" },
   ]
 
@@ -41,24 +40,6 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
             <p className="text-xs text-gray-400">Gestão Financeira</p>
           </div>
         </Link>
-        <Button variant="ghost" size="icon" onClick={onClose} className="lg:hidden">
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* User Info */}
-      <div className="p-6 border-b border-gray-800">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12 border-2 border-gray-700">
-            <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white font-semibold">
-              US
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium">Usuário</p>
-            <p className="text-sm text-gray-400">usuario@exemplo.com</p>
-          </div>
-        </div>
       </div>
 
       {/* Navigation */}
@@ -121,21 +102,6 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
               </Button>
             )
           })}
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="p-6 border-t border-gray-800">
-        <div className="rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 p-4">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center">
-              <User className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <p className="font-medium text-sm">Projeto Portfólio</p>
-              <p className="text-xs text-gray-400">Versão Demo</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>

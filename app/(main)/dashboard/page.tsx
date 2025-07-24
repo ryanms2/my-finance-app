@@ -109,8 +109,6 @@ export default async function Dashboard() {
             </Card>
           </div>
         </main>
-
-        <MobileNav />
       </div>
     </div>
   )

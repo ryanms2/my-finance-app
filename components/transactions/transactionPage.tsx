@@ -109,15 +109,8 @@ export function TransactionsPage({
         <MobileMenu />
         <div className="flex-1 overflow-auto pb-20 lg:pb-0">
             <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-800 bg-gray-950/80 px-4 sm:px-6 backdrop-blur-md">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center">
                 <h1 className="text-xl font-bold ml-10 lg:ml-0">Transações</h1>
-                {/* Mobile month picker */}
-                <MonthYearPicker
-                  value={{ month: selectedMonth, year: selectedYear }}
-                  onChange={handleDateFilterChange}
-                  disabled={isPending}
-                  className="sm:hidden"
-                />
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
                 {/* Desktop month picker */}
@@ -149,6 +142,16 @@ export function TransactionsPage({
             </header>
 
             <main className="p-4 sm:p-6">
+            {/* Mobile month picker */}
+            <div className="sm:hidden mb-4">
+                <MonthYearPicker
+                  value={{ month: selectedMonth, year: selectedYear }}
+                  onChange={handleDateFilterChange}
+                  disabled={isPending}
+                  className="w-full"
+                />
+            </div>
+
             {/* Summary Cards */}
             {summary && (
               <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-6">
@@ -281,8 +284,6 @@ export function TransactionsPage({
                 </Tabs>
             </div>
             </main>
-
-            <MobileNav />
         </div>
     </div>
     );
