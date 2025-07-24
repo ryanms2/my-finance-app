@@ -193,8 +193,6 @@ export function BudgetsPage({ budgets, summary }: BudgetsPageProps) {
             )}
           </div>
         </main>
-
-        <MobileNav />
       </div>
     </div>
   )

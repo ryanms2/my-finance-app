@@ -83,22 +83,15 @@ export function ReportsPage({
   };
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 text-white">
+    <div className="flex min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 text-white overflow-x-hidden">
       <Sidebar />
       <MobileMenu />
-      <div className="flex-1 overflow-auto pb-20 lg:pb-0">
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-800 bg-gray-950/80 px-4 sm:px-6 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold ml-10 lg:ml-0">Relatórios</h1>
-            {/* Mobile month picker */}
-            <MonthYearPicker
-              value={{ month: selectedMonth, year: selectedYear }}
-              onChange={handleFilterChange}
-              disabled={isPending}
-              className="sm:hidden"
-            />
+      <div className="flex-1 overflow-auto pb-20 lg:pb-0 min-w-0">
+        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-800 bg-gray-950/80 px-4 sm:px-6 backdrop-blur-md overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <h1 className="text-lg sm:text-xl font-bold ml-10 lg:ml-0 truncate">Relatórios</h1>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             {/* Desktop month picker */}
             <MonthYearPicker
               value={{ month: selectedMonth, year: selectedYear }}
@@ -117,22 +110,34 @@ export function ReportsPage({
         </header>
 
         <main className="p-4 sm:p-6">
+          {/* Mobile month picker */}
+          <div className="sm:hidden mb-4">
+            <MonthYearPicker
+              value={{ month: selectedMonth, year: selectedYear }}
+              onChange={handleFilterChange}
+              disabled={isPending}
+              className="w-full"
+            />
+          </div>
+          
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="bg-gray-800/50 mb-6">
-              <TabsTrigger value="overview">Visão Geral</TabsTrigger>
-              <TabsTrigger value="comparison">Comparação</TabsTrigger>
-              <TabsTrigger value="trends">Tendências</TabsTrigger>
-              <TabsTrigger value="categories">Categorias</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto">
+              <TabsList className="bg-gray-800/50 mb-6 w-full min-w-max">
+                <TabsTrigger value="overview" className="whitespace-nowrap">Visão Geral</TabsTrigger>
+                <TabsTrigger value="comparison" className="whitespace-nowrap">Comparação</TabsTrigger>
+                <TabsTrigger value="trends" className="whitespace-nowrap">Tendências</TabsTrigger>
+                <TabsTrigger value="categories" className="whitespace-nowrap">Categorias</TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="overview" className="space-y-6">
-              <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="bg-gray-900/50 border-gray-800">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm">Saldo Total</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">
+                    <div className="text-xl sm:text-2xl font-bold">
                       {reportsData ? formatCurrency(reportsData.summary.totalBalance) : 'R$ 0,00'}
                     </div>
                     <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.totalBalance) : 'text-gray-400'}`}>
@@ -149,7 +154,7 @@ export function ReportsPage({
                   <CardTitle className="text-sm">Receitas</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-xl sm:text-2xl font-bold">
                     {reportsData ? formatCurrency(reportsData.summary.currentIncome) : 'R$ 0,00'}
                   </div>
                   <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.income) : 'text-gray-400'}`}>
@@ -166,7 +171,7 @@ export function ReportsPage({
                   <CardTitle className="text-sm">Despesas</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-xl sm:text-2xl font-bold">
                     {reportsData ? formatCurrency(reportsData.summary.currentExpenses) : 'R$ 0,00'}
                   </div>
                   <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.expenses, true) : 'text-gray-400'}`}>
@@ -183,7 +188,7 @@ export function ReportsPage({
                   <CardTitle className="text-sm">Economia</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-xl sm:text-2xl font-bold">
                     {reportsData ? formatCurrency(reportsData.summary.currentBalance) : 'R$ 0,00'}
                   </div>
                   <p className={`text-xs mt-1 ${reportsData ? getVariationColor(reportsData.summary.variations.balance) : 'text-gray-400'}`}>
@@ -198,7 +203,7 @@ export function ReportsPage({
 
             <AdvancedMetrics data={advancedMetrics} />
 
-            <div className="grid gap-4 sm:gap-6 md:grid-cols-1 lg:grid-cols-7">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-7">
                 <Card className="lg:col-span-4 bg-gray-900/50 border-gray-800">
                   <CardHeader>
                     <CardTitle>Gastos Mensais</CardTitle>
@@ -206,7 +211,7 @@ export function ReportsPage({
                       Comparativo de receitas vs despesas dos últimos 6 meses
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="overflow-hidden">
                     <MonthlySpendingChart data={monthlyChartData} />
                   </CardContent>
                 </Card>
@@ -272,14 +277,14 @@ export function ReportsPage({
                     Comparação diária entre o mês atual e o mês anterior
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="overflow-hidden">
                   <ComparisonChart data={reportsData?.dailyData} />
                 </CardContent>
               </Card>
 
               <AdvancedMetrics data={advancedMetrics} />
 
-              <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
                 <Card className="bg-gray-900/50 border-gray-800">
                   <CardHeader>
                     <CardTitle>Análise de Variação</CardTitle>
@@ -432,7 +437,7 @@ export function ReportsPage({
                 <CardContent>
                   {reportsData ? (
                     <div className="space-y-6">
-                      <div className="grid gap-4 md:grid-cols-2">
+                      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                         <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
                           <h3 className="font-medium text-blue-400 mb-2">Tendência de Receitas</h3>
                           <p className="text-sm text-gray-300">
@@ -456,7 +461,7 @@ export function ReportsPage({
                       {advancedMetrics && (
                         <div>
                           <h3 className="font-medium text-white mb-3">Projeções</h3>
-                          <div className="grid gap-3 md:grid-cols-3">
+                          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
                             <div className="p-3 bg-gray-800/50 rounded-lg">
                               <p className="text-xs text-gray-400">Média diária atual</p>
                               <p className="font-medium">{formatCurrency(advancedMetrics.dailyAverage.current)}</p>
@@ -564,8 +569,6 @@ export function ReportsPage({
             </TabsContent>
           </Tabs>
         </main>
-
-        <MobileNav />
       </div>
     </div>
   )

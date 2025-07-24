@@ -140,53 +140,12 @@ export function SettingsPage({ user }: SettingsPageProps) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {/* <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Alertas de Orçamento</p>
-                        <p className="text-sm text-gray-400">Receba alertas quando se aproximar do limite</p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Relatórios Semanais</p>
-                        <p className="text-sm text-gray-400">Receba um resumo semanal das suas finanças</p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Dicas Financeiras</p>
-                        <p className="text-sm text-gray-400">Receba dicas para melhorar suas finanças</p>
-                      </div>
-                      <Switch />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Notificações por Email</p>
-                        <p className="text-sm text-gray-400">Receba notificações por email</p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-                  </div> */}
                   <NotificationSettings />
                 </CardContent>
-                {/* <CardFooter className="flex justify-end">
-                  <Button className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-                    <Save className="mr-2 h-4 w-4" />
-                    Salvar Preferências
-                  </Button>
-                </CardFooter> */}
               </Card>
             </TabsContent>
           </Tabs>
         </main>
-
-        <MobileNav />
       </div>
     </div>
   )
