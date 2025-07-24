@@ -79,7 +79,6 @@ export function WalletForm({
     // lógica para salvar a carteira
       const createAccountInDb = async () => {
         const createNewAccount = await createAccount(values);
-        console.log(createNewAccount);
         if (createNewAccount) {
           toast.success("Carteira criada com sucesso");
           form.reset();

@@ -29,7 +29,11 @@ export function useExport() {
     setIsExporting(true);
     
     try {
-      toast.loading('Preparando exportação...', { id: 'export-loading' });
+      toast.loading('Preparando exportação...', { 
+        id: 'export-loading',
+        duration: Infinity,
+        icon: '📊'
+      });
       
       const response = await fetch('/api/export', {
         method: 'POST',
@@ -57,7 +61,11 @@ export function useExport() {
         throw new Error(errorMessage);
       }
 
-      toast.loading('Gerando arquivo...', { id: 'export-loading' });
+      toast.loading('Gerando arquivo...', { 
+        id: 'export-loading',
+        duration: Infinity,
+        icon: '⚡'
+      });
 
       // Obter o nome do arquivo do cabeçalho Content-Disposition
       const contentDisposition = response.headers.get('Content-Disposition');
@@ -76,11 +84,17 @@ export function useExport() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success(`Arquivo ${filename} baixado com sucesso!`, { id: 'export-loading' });
+      toast.success(`Arquivo ${filename} baixado com sucesso!`, { 
+        id: 'export-loading',
+        icon: '✅'
+      });
       
     } catch (error) {
       console.error('Erro ao exportar:', error);
-      toast.error(error instanceof Error ? error.message : 'Erro ao exportar dados', { id: 'export-loading' });
+      toast.error(error instanceof Error ? error.message : 'Erro ao exportar dados', { 
+        id: 'export-loading',
+        icon: '❌'
+      });
     } finally {
       setIsExporting(false);
     }
