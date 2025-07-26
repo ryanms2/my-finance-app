@@ -4,6 +4,9 @@ import { getTransactionsData, getTransactionsSummary, getTransactionsDataFiltere
 import { getAccount, getCategoriesUser } from "@/lib/data"
 import { auth } from "@/app/auth"
 
+// Esta página precisa ser dinâmica devido aos filtros de busca
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: "Transações - MyFinance",
   description: "Gerencie suas transações financeiras",
