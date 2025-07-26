@@ -1,12 +1,12 @@
 "use client"
 
 import type React from "react"
-import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { BarChart3, CreditCard, DollarSign, Home, Settings, Wallet, User } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { NavigationLink } from "@/components/navigation-link"
 
 export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
   const pathname = usePathname()
@@ -17,12 +17,12 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
     <div className={cn("pb-12 w-64 border-r border-gray-800 bg-gray-950 hidden lg:block", className)}>
       <div className="space-y-4 py-4">
         <div className="px-4 py-2">
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl">
+          <NavigationLink href="/" className="flex items-center gap-2 font-bold text-xl">
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
               <DollarSign className="h-5 w-5 text-white" />
             </div>
             <span>MyFinance</span>
-          </Link>
+          </NavigationLink>
         </div>
         <div className="px-3">
           <div className="space-y-1">
@@ -32,10 +32,10 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
               size="sm"
               className={cn("w-full justify-start gap-2", isActive("/dashboard") ? "text-white" : "text-gray-400")}
             >
-              <Link href="/dashboard">
+              <NavigationLink href="/dashboard">
                 <Home className="h-4 w-4" />
                 Dashboard
-              </Link>
+              </NavigationLink>
             </Button>
             <Button
               asChild
@@ -43,10 +43,10 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
               size="sm"
               className={cn("w-full justify-start gap-2", isActive("/transactions") ? "text-white" : "text-gray-400")}
             >
-              <Link href="/transactions">
+              <NavigationLink href="/transactions">
                 <CreditCard className="h-4 w-4" />
                 Transações
-              </Link>
+              </NavigationLink>
             </Button>
             <Button
               asChild
@@ -54,10 +54,10 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
               size="sm"
               className={cn("w-full justify-start gap-2", isActive("/wallets") ? "text-white" : "text-gray-400")}
             >
-              <Link href="/wallets">
+              <NavigationLink href="/wallets">
                 <Wallet className="h-4 w-4" />
                 Carteiras
-              </Link>
+              </NavigationLink>
             </Button>
             <Button
               asChild
@@ -65,10 +65,10 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
               size="sm"
               className={cn("w-full justify-start gap-2", isActive("/budgets") ? "text-white" : "text-gray-400")}
             >
-              <Link href="/budgets">
+              <NavigationLink href="/budgets">
                 <Wallet className="h-4 w-4" />
                 Orçamentos
-              </Link>
+              </NavigationLink>
             </Button>
             <Button
               asChild
@@ -76,10 +76,10 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
               size="sm"
               className={cn("w-full justify-start gap-2", isActive("/reports") ? "text-white" : "text-gray-400")}
             >
-              <Link href="/reports">
+              <NavigationLink href="/reports">
                 <BarChart3 className="h-4 w-4" />
                 Relatórios
-              </Link>
+              </NavigationLink>
             </Button>
           </div>
         </div>
@@ -92,10 +92,10 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
               size="sm"
               className={cn("w-full justify-start gap-2", isActive("/settings") ? "text-white" : "text-gray-400")}
             >
-              <Link href="/settings">
+              <NavigationLink href="/settings">
                 <Settings className="h-4 w-4" />
                 Preferências
-              </Link>
+              </NavigationLink>
             </Button>
           </div>
         </div>

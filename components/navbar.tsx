@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { NavigationLink } from "@/components/navigation-link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -55,20 +56,20 @@ export function Navbar() {
 
         {/* Logo and desktop nav */}
         <div className="flex items-center gap-10">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
+          <NavigationLink href="/" className="flex items-center gap-2 font-semibold">
             <DollarSign className="h-6 w-6 text-primary" />
             <span>MyFinance</span>
-          </Link>
+          </NavigationLink>
 
           <nav className="hidden md:flex gap-6">
             {navLinks.map((link) => (
-              <Link
+              <NavigationLink
                 key={link.name}
                 href={link.href}
                 className={`text-sm font-medium transition-colors hover:text-primary ${pathname === link.href ? "text-primary" : "text-muted-foreground"}`}
               >
                 {link.name}
-              </Link>
+              </NavigationLink>
             ))}
           </nav>
         </div>

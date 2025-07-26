@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Wallet, TrendingUp, PieChart, Bell } from "lucide-react"
 import Link from "next/link"
+import { NavigationLink } from "@/components/navigation-link"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface WelcomeDialogProps {
@@ -77,9 +78,9 @@ export function WelcomeDialog({ open, onOpenChange }: WelcomeDialogProps) {
             Adicione sua primeira carteira para começar a gerenciar suas finanças
           </p>
           <Button asChild size="lg" className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-            <Link href="/wallets">
+            <NavigationLink href="/wallets">
               Adicionar Carteira
-            </Link>
+            </NavigationLink>
           </Button>
         </div>
       </DialogContent>

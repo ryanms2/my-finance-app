@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown"
 import Link from "next/link"
+import { NavigationLink } from "@/components/navigation-link"
 
 interface UserNavClientProps {
   user?: {
@@ -50,14 +51,14 @@ export function UserNavClient({ user }: UserNavClientProps) {
           <DropdownMenuSeparator className="bg-gray-800" />
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              <Link href="/settings">
+              <NavigationLink href="/settings">
                 Perfil
-              </Link>
+              </NavigationLink>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Link href="/settings">
+              <NavigationLink href="/settings">
                 Configurações
-              </Link>
+              </NavigationLink>
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator className="bg-gray-800" />

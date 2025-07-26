@@ -1,9 +1,9 @@
 "use client"
 
 import { CreditCard, Home, Plus, BarChart3, Wallet, Settings } from "lucide-react"
-import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { NavigationLink } from "@/components/navigation-link"
 import { TransactionForm } from "@/components/transaction-form"
 
 export function MobileNav() {
@@ -56,7 +56,7 @@ export function MobileNav() {
           }
 
           return (
-            <Link
+            <NavigationLink
               key={item.href}
               href={item.href}
               className={cn(
@@ -74,7 +74,7 @@ export function MobileNav() {
               </div>
               <span className="text-xs mt-1 font-medium">{item.label}</span>
               {isActive && <div className="w-1 h-1 bg-purple-400 rounded-full mt-1 animate-pulse" />}
-            </Link>
+            </NavigationLink>
           )
         })}
       </div>

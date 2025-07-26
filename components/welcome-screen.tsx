@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Wallet, TrendingUp, PieChart, Bell } from "lucide-react"
 import Link from "next/link"
+import { NavigationLink } from "@/components/navigation-link"
 
 export function WelcomeScreen() {
   return (
@@ -95,9 +96,9 @@ export function WelcomeScreen() {
             Adicione sua primeira carteira para começar a gerenciar suas finanças
           </p>
           <Button asChild size="lg" className="mt-4">
-            <Link href="/wallets">
+            <NavigationLink href="/wallets">
               Adicionar Carteira
-            </Link>
+            </NavigationLink>
           </Button>
         </div>
       </div>

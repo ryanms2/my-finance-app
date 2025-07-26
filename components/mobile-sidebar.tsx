@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
+import { NavigationLink } from "@/components/navigation-link"
 
 interface MobileSidebarProps {
   onClose: () => void
@@ -31,7 +32,7 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-800">
-        <Link href="/" className="flex items-center gap-3" onClick={onClose}>
+        <NavigationLink href="/" className="flex items-center gap-3" onClick={onClose}>
           <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
             <DollarSign className="h-6 w-6 text-white" />
           </div>
@@ -39,7 +40,7 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
             <h1 className="font-bold text-lg">MyFinance</h1>
             <p className="text-xs text-gray-400">Gestão Financeira</p>
           </div>
-        </Link>
+        </NavigationLink>
       </div>
 
       {/* Navigation */}
@@ -63,11 +64,11 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
                     : "text-gray-400 hover:text-white hover:bg-gray-800/50",
                 )}
               >
-                <Link href={item.href} onClick={onClose} className="flex items-center gap-3 w-full">
+                <NavigationLink href={item.href} onClick={onClose} className="flex items-center gap-3 w-full">
                   <Icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
                   {isActive && <div className="ml-auto w-2 h-2 bg-purple-400 rounded-full" />}
-                </Link>
+                </NavigationLink>
               </Button>
             )
           })}
@@ -94,11 +95,11 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
                     : "text-gray-400 hover:text-white hover:bg-gray-800/50",
                 )}
               >
-                <Link href={item.href} onClick={onClose} className="flex items-center gap-3 w-full">
+                <NavigationLink href={item.href} onClick={onClose} className="flex items-center gap-3 w-full">
                   <Icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
                   {isActive && <div className="ml-auto w-2 h-2 bg-purple-400 rounded-full" />}
-                </Link>
+                </NavigationLink>
               </Button>
             )
           })}
