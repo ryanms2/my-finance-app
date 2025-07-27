@@ -1,6 +1,10 @@
 "use client"
 
-import { MoreHorizontal, CreditCard, Banknote, PiggyBank, Wallet, TrendingUp, TrendingDown } from "lucide-react"
+import { useState } from "react"
+import { MoreHorizontal, CreditCard, Banknote, PiggyBank, Wallet, TrendingUp, TrendingDown, Star, Copy, BarChart3 } from "lucide-react"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,6 +16,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { EditWalletDialog } from "@/components/wallets/edit-wallet-dialog"
+import { DeleteWalletDialog } from "@/components/wallets/delete-wallet-dialog"
+import { WalletHistoryDialog } from "@/components/wallets/wallet-history-dialog"
+import { WalletStatisticsDialog } from "@/components/wallets/wallet-statistics-dialog"
+import { setDefaultWalletAction, duplicateWalletAction } from "@/lib/dashboardActions/walletActions"
 
 interface WalletCardProps {
   wallet: {
@@ -46,6 +55,11 @@ const walletTypeLabels = {
 }
 
 export function WalletCard({ wallet }: WalletCardProps) {
+  const [isSettingDefault, setIsSettingDefault] = useState(false)
+  const [isDuplicating, setIsDuplicating] = useState(false)
+  const [isNavigating, setIsNavigating] = useState(false)
+  const router = useRouter()
+  
   const Icon = walletIcons[wallet.type as keyof typeof walletIcons] || Wallet
   const isNegative = wallet.balance < 0
   const isCredit = wallet.type === "credit"
@@ -63,6 +77,52 @@ export function WalletCard({ wallet }: WalletCardProps) {
       return (used / wallet.limit) * 100
     }
     return 0
+  }
+
+  const handleSetDefault = async () => {
+    if (wallet.isDefault) return
+    
+    setIsSettingDefault(true)
+    try {
+      const result = await setDefaultWalletAction(wallet.id.toString())
+      if (result.success) {
+        toast.success("Carteira definida como padrão!")
+        router.refresh()
+      } else {
+        toast.error(result.error || "Erro ao definir carteira padrão")
+      }
+    } catch (error) {
+      toast.error("Erro interno do servidor")
+    } finally {
+      setIsSettingDefault(false)
+    }
+  }
+
+  const handleDuplicate = async () => {
+    setIsDuplicating(true)
+    try {
+      const result = await duplicateWalletAction(wallet.id.toString())
+      if (result.success) {
+        toast.success("Carteira duplicada com sucesso!")
+        router.refresh()
+      } else {
+        toast.error(result.error || "Erro ao duplicar carteira")
+      }
+    } catch (error) {
+      toast.error("Erro interno do servidor")
+    } finally {
+      setIsDuplicating(false)
+    }
+  }
+
+  const handleNavigateToTransactions = async () => {
+    setIsNavigating(true)
+    try {
+      await router.push(`/transactions?wallet=${wallet.id}`)
+    } catch (error) {
+      toast.error("Erro ao navegar para transações")
+      setIsNavigating(false)
+    }
   }
 
   return (
@@ -98,11 +158,67 @@ export function WalletCard({ wallet }: WalletCardProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
-              <DropdownMenuItem>Editar</DropdownMenuItem>
-              <DropdownMenuItem>Ver Histórico</DropdownMenuItem>
-              <DropdownMenuItem>Definir como Padrão</DropdownMenuItem>
+              
+              <EditWalletDialog 
+                wallet={wallet}
+                trigger={
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    Editar
+                  </DropdownMenuItem>
+                }
+              />
+              
+              <WalletHistoryDialog 
+                wallet={wallet}
+                trigger={
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    Ver Histórico
+                  </DropdownMenuItem>
+                }
+              />
+              
+              <WalletStatisticsDialog 
+                wallet={wallet}
+                trigger={
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                    Ver Estatísticas
+                  </DropdownMenuItem>
+                }
+              />
+              
+              {!wallet.isDefault && (
+                <DropdownMenuItem 
+                  onClick={handleSetDefault}
+                  disabled={isSettingDefault}
+                  className="flex items-center gap-2"
+                >
+                  <Star className="h-3 w-3" />
+                  {isSettingDefault ? "Definindo..." : "Definir como Padrão"}
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuItem 
+                onClick={handleDuplicate}
+                disabled={isDuplicating}
+                className="flex items-center gap-2"
+              >
+                <Copy className="h-3 w-3" />
+                {isDuplicating ? "Duplicando..." : "Duplicar Carteira"}
+              </DropdownMenuItem>
+              
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-500">Excluir</DropdownMenuItem>
+              
+              <DeleteWalletDialog 
+                wallet={wallet}
+                trigger={
+                  <DropdownMenuItem 
+                    onSelect={(e) => e.preventDefault()}
+                    className="text-red-500 focus:text-red-400"
+                  >
+                    Excluir
+                  </DropdownMenuItem>
+                }
+              />
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -157,9 +273,22 @@ export function WalletCard({ wallet }: WalletCardProps) {
       </CardContent>
 
       <CardFooter className="pt-2 relative">
-        {/* <Button variant="ghost" size="sm" className="w-full text-xs hover:bg-gray-800/50">
-          Ver Transações
-        </Button> */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="w-full text-xs hover:bg-gray-800/50"
+          onClick={handleNavigateToTransactions}
+          disabled={isNavigating}
+        >
+          {isNavigating ? (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+              Carregando...
+            </div>
+          ) : (
+            "Ver Transações"
+          )}
+        </Button>
       </CardFooter>
     </Card>
   )

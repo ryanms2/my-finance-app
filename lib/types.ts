@@ -17,12 +17,12 @@ export interface TransactionFormProps {
 };
 
 export const walletTypes = [
-    { label: "Conta Corrente", value: "bank" },
-    { label: "Poupança", value: "savings" },
-    { label: "Cartão de Crédito", value: "credit" },
-    { label: "Cartão de Débito", value: "debit" },
-    { label: "Dinheiro", value: "cash" },
-    { label: "Investimentos", value: "investment" },
+    { label: "Conta Corrente", value: "bank", icon: "🏦" },
+    { label: "Poupança", value: "savings", icon: "🐷" },
+    { label: "Cartão de Crédito", value: "credit", icon: "💳" },
+    { label: "Cartão de Débito", value: "debit", icon: "💳" },
+    { label: "Dinheiro", value: "cash", icon: "💰" },
+    { label: "Investimentos", value: "investment", icon: "📈" },
 ];
 
 export const categories = [
@@ -75,21 +75,42 @@ export const formSchemaAccount = z.object({
       .optional()
       .refine(
         (val: any) => {
-          // Se valor existe, deve ser 4 dígitos numéricos
-          if (val) {
-            return /^\d{4}$/.test(val);
-          }
-          return true;
+          // Validação condicional baseada no tipo da carteira
+          return !val || val.length >= 3; // Se fornecido, deve ter pelo menos 3 caracteres
         },
         {
-          message: "Insira os 4 últimos dígitos do cartão.",
+          message: "O número da conta deve ter pelo menos 3 caracteres.",
           path: ["accountNumber"],
         }
       ),
-    totalLimit: z.number().min(0, { message: "O limite deve ser maior ou igual a zero." }).optional(),
+    totalLimit: z.number().min(0, { message: "O limite deve ser maior ou igual a zero." }).optional().nullable(),
     color: z.string().min(1, { message: "Por favor selecione uma cor." }),
     isDefault: z.boolean().optional(),
-});
+}).refine(
+  (data) => {
+    // Para cartões de crédito, o limite total é obrigatório
+    if (data.type === "credit" && (!data.totalLimit || data.totalLimit <= 0)) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "Para cartões de crédito, o limite total é obrigatório e deve ser maior que zero.",
+    path: ["totalLimit"],
+  }
+).refine(
+  (data) => {
+    // Para cartões de crédito, o saldo não pode ser maior que o limite
+    if (data.type === "credit" && data.totalLimit && data.balance > data.totalLimit) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "O saldo disponível não pode ser maior que o limite total.",
+    path: ["balance"],
+  }
+);
 
 const currentYear = new Date().getFullYear();
 const minDateThisYear = new Date(currentYear, 0, 1);
@@ -196,10 +217,34 @@ export interface Wallet {
   name: string;
   type: string;
   balance: number;
-  totalLimit: number;
-  institution: string;
-  accountNumber: string;
+  totalLimit?: number | null;
+  institution?: string | null;
+  accountNumber?: string | null;
   color: string;
+  isDefault: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface WalletsSummary {
+  totalBalance: number;
+  activeWallets: number;
+  creditCards: Array<{
+    id: string;
+    name: string;
+    balance: number;
+    limit?: number | null;
+  }>;
+}
+
+export interface TransferHistoryItem {
+  id: string;
+  fromWallet: string;
+  toWallet: string;
+  amount: number;
+  description: string;
+  date: string;
+  status: 'completed' | 'pending' | 'failed';
 }
 
 // Interfaces para dados de relatórios
@@ -270,8 +315,12 @@ export const formSchemaTransfer = z.object({
     }),
     amount: z.coerce.number().min(0.01, {
       message: "O valor deve ser maior que zero.",
+    }).max(999999.99, {
+      message: "O valor não pode exceder R$ 999.999,99.",
     }),
-    description: z.string().optional(),
+    description: z.string().max(200, {
+      message: "A descrição não pode ter mais de 200 caracteres.",
+    }).optional(),
 }).refine((data) => data.fromAccountId !== data.toAccountId, {
   message: "A carteira de origem deve ser diferente da carteira de destino",
   path: ["toAccountId"],

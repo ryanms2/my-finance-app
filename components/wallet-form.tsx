@@ -68,7 +68,7 @@ export function WalletForm({
       balance: 0,
       institution: "",
       accountNumber: "",
-      totalLimit: undefined,
+      totalLimit: null,
       color: "",
       isDefault: false,
     },
@@ -83,15 +83,22 @@ export function WalletForm({
         try {
           const createNewAccount = await createAccount(values);
           if (createNewAccount) {
-            toast.success("Carteira criada com sucesso");
+            const walletTypeLabel = walletTypes.find(t => t.value === values.type)?.label || "Carteira";
+            toast.success(`${walletTypeLabel} "${values.name}" criada com sucesso! 🎉`);
             form.reset();
             setOpen(false);
+            
+            // Aguardar um pouco antes de recarregar para mostrar o toast
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
           }
           else {
-            toast.error("Erro ao criar carteira");
+            toast.error("Erro ao criar carteira. Tente novamente.");
           }
         } catch (error) {
-          toast.error("Erro ao criar carteira");
+          console.error("Erro ao criar carteira:", error);
+          toast.error("Erro interno do servidor. Tente novamente mais tarde.");
         } finally {
           setIsSubmitting(false);
         }
@@ -215,10 +222,10 @@ export function WalletForm({
                             type="number"
                             step="0.01"
                             placeholder="0,00"
-                            value={field.value === undefined ? "" : field.value}
+                            value={field.value === undefined || field.value === null ? "" : field.value}
                             onChange={e => {
                               const val = e.target.value;
-                              field.onChange(val === "" ? "" : Number(val));
+                              field.onChange(val === "" ? null : Number(val));
                             }}
                             className="bg-gray-800 border-gray-700 focus-visible:ring-purple-500"
                           />

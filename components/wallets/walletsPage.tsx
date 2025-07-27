@@ -130,6 +130,7 @@ export function WalletsPage({ wallets, summary, transferHistory }: WalletsPagePr
                     <TabsTrigger value="bank" className="flex-1 sm:flex-none">Bancos</TabsTrigger>
                     <TabsTrigger value="cards" className="flex-1 sm:flex-none">Cartões</TabsTrigger>
                     <TabsTrigger value="cash" className="flex-1 sm:flex-none">Dinheiro</TabsTrigger>
+                    <TabsTrigger value="investment" className="flex-1 sm:flex-none">Investimentos</TabsTrigger>
                   </TabsList>
                 </div>
 
@@ -165,31 +166,85 @@ export function WalletsPage({ wallets, summary, transferHistory }: WalletsPagePr
 
                 <TabsContent value="bank" className="mt-0">
                   <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-                    {wallets
-                      .filter((w) => ["bank", "savings"].includes(w.type))
-                      .map((wallet) => (
-                        <WalletCard key={wallet.id} wallet={wallet} />
-                      ))}
+                    {wallets.filter((w) => ["bank", "savings"].includes(w.type)).length === 0 ? (
+                      <div className="sm:col-span-2 text-center py-12">
+                        <div className="h-16 w-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                          <div className="text-2xl">🏦</div>
+                        </div>
+                        <h3 className="text-xl font-medium mb-2">Nenhuma conta bancária</h3>
+                        <p className="text-gray-400 mb-6">Adicione uma conta corrente ou poupança</p>
+                        <WalletForm className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600" />
+                      </div>
+                    ) : (
+                      wallets
+                        .filter((w) => ["bank", "savings"].includes(w.type))
+                        .map((wallet) => (
+                          <WalletCard key={wallet.id} wallet={wallet} />
+                        ))
+                    )}
                   </div>
                 </TabsContent>
 
                 <TabsContent value="cards" className="mt-0">
                   <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-                    {wallets
-                      .filter((w) => ["credit", "debit"].includes(w.type))
-                      .map((wallet) => (
-                        <WalletCard key={wallet.id} wallet={wallet} />
-                      ))}
+                    {wallets.filter((w) => ["credit", "debit"].includes(w.type)).length === 0 ? (
+                      <div className="sm:col-span-2 text-center py-12">
+                        <div className="h-16 w-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                          <div className="text-2xl">💳</div>
+                        </div>
+                        <h3 className="text-xl font-medium mb-2">Nenhum cartão cadastrado</h3>
+                        <p className="text-gray-400 mb-6">Adicione um cartão de crédito ou débito</p>
+                        <WalletForm className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600" />
+                      </div>
+                    ) : (
+                      wallets
+                        .filter((w) => ["credit", "debit"].includes(w.type))
+                        .map((wallet) => (
+                          <WalletCard key={wallet.id} wallet={wallet} />
+                        ))
+                    )}
                   </div>
                 </TabsContent>
 
                 <TabsContent value="cash" className="mt-0">
                   <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
-                    {wallets
-                      .filter((w) => w.type === "cash")
-                      .map((wallet) => (
-                        <WalletCard key={wallet.id} wallet={wallet} />
-                      ))}
+                    {wallets.filter((w) => w.type === "cash").length === 0 ? (
+                      <div className="sm:col-span-2 text-center py-12">
+                        <div className="h-16 w-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                          <div className="text-2xl">💰</div>
+                        </div>
+                        <h3 className="text-xl font-medium mb-2">Nenhum dinheiro cadastrado</h3>
+                        <p className="text-gray-400 mb-6">Adicione uma carteira para dinheiro em espécie</p>
+                        <WalletForm className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600" />
+                      </div>
+                    ) : (
+                      wallets
+                        .filter((w) => w.type === "cash")
+                        .map((wallet) => (
+                          <WalletCard key={wallet.id} wallet={wallet} />
+                        ))
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="investment" className="mt-0">
+                  <div className="grid gap-4 sm:gap-6 sm:grid-cols-2">
+                    {wallets.filter((w) => w.type === "investment").length === 0 ? (
+                      <div className="sm:col-span-2 text-center py-12">
+                        <div className="h-16 w-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                          <div className="text-2xl">📈</div>
+                        </div>
+                        <h3 className="text-xl font-medium mb-2">Nenhum investimento cadastrado</h3>
+                        <p className="text-gray-400 mb-6">Adicione uma conta de investimentos</p>
+                        <WalletForm className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600" />
+                      </div>
+                    ) : (
+                      wallets
+                        .filter((w) => w.type === "investment")
+                        .map((wallet) => (
+                          <WalletCard key={wallet.id} wallet={wallet} />
+                        ))
+                    )}
                   </div>
                 </TabsContent>
               </Tabs>
