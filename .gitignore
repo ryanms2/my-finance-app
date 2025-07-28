@@ -41,3 +41,12 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 prisma/dev.db
+
+# Cache do Vitest
+.vitest/
+
+# Logs de teste
+test-results/
+
+# Arquivos temporários de teste
+*.test.log
