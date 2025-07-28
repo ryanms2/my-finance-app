@@ -1,7 +1,11 @@
 import NextAuth from "next-auth"
 import EmailProvider from 'next-auth/providers/nodemailer'
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import { prisma } from "@/utils/prisma/prisma"
+// import { prisma } from "@/utils/prisma/prisma"
+import { PrismaClient } from '../prisma/app/generated/prisma-client'
+import { withAccelerate } from '@prisma/extension-accelerate'
+
+const prisma = new PrismaClient().$extends(withAccelerate())
 import { createDefaultCategoriesForUser } from "@/services/categoryService"
  
 export const { auth, handlers, signIn, signOut } = NextAuth({

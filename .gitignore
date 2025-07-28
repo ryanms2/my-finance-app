@@ -50,3 +50,8 @@ test-results/
 
 # Arquivos temporários de teste
 *.test.log
+
+# prisma
+prisma/app
+prisma/migrations
+prisma/migrations.zip
