@@ -52,6 +52,7 @@ export default async function Transactions({
           institution: w.institution ?? "",
           accountNumber: w.accountNumber ?? "",
           color: w.color ?? "",
+          isDefault: w.isDefault ?? false,
         }))
       : false;
 

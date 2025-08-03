@@ -45,8 +45,22 @@ export function TransactionForm({children, className, variant = "default", size 
       type: "expense",
       date: new Date(),
       category: "",
+      account: "",
     },
   })
+
+  // Observar os valores do formulário para validação em tempo real
+  const watchedValues = form.watch()
+  
+  // Verificar se todos os campos obrigatórios estão preenchidos
+  const isFormValid = 
+    watchedValues.description && 
+    watchedValues.description.length >= 2 &&
+    watchedValues.amount && 
+    watchedValues.amount > 0 &&
+    watchedValues.category &&
+    watchedValues.account &&
+    watchedValues.date
   
   async function existAccount() {
     if (!account && open || account.valueOf() == false) {
@@ -57,12 +71,18 @@ export function TransactionForm({children, className, variant = "default", size 
   }
 
   async function onSubmit(values: TransactionFormValues) {
+    // Validação adicional antes de enviar
+    if (!values.description || !values.amount || !values.category || !values.account || !values.date) {
+      toast.error("Por favor, preencha todos os campos obrigatórios.")
+      return
+    }
+
     // lógica para salvar a transação
     const transaction = await createTransactionAction(values)
     if(transaction.success) {
       setOpen(false)
+      form.reset() // Limpar o formulário após sucesso
       return toast.success("Transação criada com sucesso!")
-
     }
     
     toast.error(transaction.error)
@@ -89,10 +109,10 @@ export function TransactionForm({children, className, variant = "default", size 
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição</FormLabel>
+                  <FormLabel>Descrição *</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Ex: Supermercado"
+                      placeholder="Ex: Supermercado (obrigatório)"
                       {...field}
                       className="bg-gray-800 border-gray-700 focus-visible:ring-purple-500"
                     />
@@ -108,12 +128,12 @@ export function TransactionForm({children, className, variant = "default", size 
                 name="amount"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>Valor</FormLabel>
+                    <FormLabel>Valor *</FormLabel>
                     <FormControl>
                     <Input
                       type="number"
                       step="0.01"
-                      placeholder="0,00"
+                      placeholder="0,00 (obrigatório)"
                       value={field.value === undefined ? "" : field.value}
                       onChange={e => {
                         const val = e.target.value;
@@ -137,7 +157,7 @@ export function TransactionForm({children, className, variant = "default", size 
               name="category"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Categoria</FormLabel>
+                  <FormLabel>Categoria *</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -221,11 +241,11 @@ export function TransactionForm({children, className, variant = "default", size 
               name="account"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Carteira</FormLabel>
+                  <FormLabel>Carteira *</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="bg-gray-800 border-gray-700 focus:ring-purple-500">
-                        <SelectValue placeholder="Selecione uma carteira" />
+                        <SelectValue placeholder="Selecione uma carteira (obrigatório)" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-gray-800 border-gray-700">
@@ -262,7 +282,7 @@ export function TransactionForm({children, className, variant = "default", size 
               name="date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Data</FormLabel>
+                  <FormLabel>Data *</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -304,7 +324,11 @@ export function TransactionForm({children, className, variant = "default", size 
               </Button>
               <Button
                 type="submit"
-                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                disabled={!isFormValid}
+                className={cn(
+                  "bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600",
+                  !isFormValid && "opacity-50 cursor-not-allowed"
+                )}
               >
                 Salvar
               </Button>

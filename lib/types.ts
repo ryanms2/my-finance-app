@@ -130,10 +130,10 @@ export const formSchemaTransaction = z.object({
     }),
     user: z.string().optional(),
     account: z.string().min(1, {
-      message: "Por favor selecione um id de conta.",
-    }).optional(),
+      message: "Por favor selecione uma conta.",
+    }),
     category: z.string().min(1, {
-      message: "Por favor selecione um id de categoria.",
+      message: "Por favor selecione uma categoria.",
     })
 });
 
