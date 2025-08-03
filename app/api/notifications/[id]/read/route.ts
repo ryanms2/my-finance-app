@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/auth'
+import { getCurrentUserId } from '@/lib/auth-server'
 import { markNotificationAsRead } from '@/lib/notifications/service'
 
 interface Params {
@@ -11,8 +11,8 @@ export async function POST(
   { params }: { params: Promise<Params> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getCurrentUserId()
+    if (!userId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 

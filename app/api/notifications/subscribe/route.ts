@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/auth'
+import { getCurrentUserId } from '@/lib/auth-server'
 import { registerPushSubscription } from '@/lib/notifications/push'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getCurrentUserId()
+    if (!userId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     const success = await registerPushSubscription(
-      session.user.id,
+      userId,
       subscription,
       userAgent
     )

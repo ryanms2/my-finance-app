@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/auth'
+import { getCurrentUserId } from '@/lib/auth-server'
 import { getNotificationPreferences } from '@/lib/notifications/service'
 import { prisma } from '@/utils/prisma/prisma'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getCurrentUserId()
+    if (!userId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const preferences = await getNotificationPreferences(session.user.id)
+    const preferences = await getNotificationPreferences(userId)
     
     return NextResponse.json(preferences)
   } catch (error) {
@@ -24,22 +24,22 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getCurrentUserId()
+    if (!userId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
     const body = await request.json()
     
     const updatedPreferences = await prisma.notificationPreferences.upsert({
-      where: { userId: session.user.id },
+      where: { userId },
       update: {
         ...body,
         quietHours: body.quietHours ? JSON.stringify(body.quietHours) : undefined,
         updatedAt: new Date(),
       },
       create: {
-        userId: session.user.id,
+        userId,
         enableInApp: body.enableInApp ?? true,
         enablePush: body.enablePush ?? true,
         enableEmail: body.enableEmail ?? false,

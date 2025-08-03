@@ -3,7 +3,6 @@
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "next-themes";
 import { SessionProvider } from "next-auth/react";
-import { NotificationProvider } from "@/lib/notifications/client";
 import { NavigationLoadingProvider } from "@/components/navigation-loading-provider";
 import { NavigationProgressBar } from "@/components/navigation-progress-bar";
 import { Toaster } from "@/components/ui/sonner";
@@ -21,13 +20,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           <SessionProvider>
-            <NotificationProvider>
-              <NavigationLoadingProvider>
-                <NavigationProgressBar />
-                {children}
-                <Toaster />
-              </NavigationLoadingProvider>
-            </NotificationProvider>
+            <NavigationLoadingProvider>
+              <NavigationProgressBar />
+              {children}
+              <Toaster />
+            </NavigationLoadingProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>

@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "app/generated/prisma-client"
 }
 
 datasource db {
@@ -84,6 +83,7 @@ model Session {
 }
  
 model VerificationToken {
+  id         String   @id @default(cuid())
   identifier String
   token      String
   expires    DateTime

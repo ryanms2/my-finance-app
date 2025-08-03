@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/app/auth'
+import { getCurrentUserId } from '@/lib/auth-server'
 import { getUserNotifications, getUnreadNotificationCount } from '@/lib/notifications/service'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
+    const userId = await getCurrentUserId()
+    if (!userId) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
     const unreadOnly = searchParams.get('unreadOnly') === 'true'
 
-    // Buscar notificações usando o userId da session do servidor
+    // Buscar notificações usando o userId obtido de forma segura
     const [notifications, unreadCount] = await Promise.all([
-      getUserNotifications(session.user.id, { limit, offset, unreadOnly }),
-      getUnreadNotificationCount(session.user.id),
+      getUserNotifications(userId, { limit, offset, unreadOnly }),
+      getUnreadNotificationCount(userId),
     ])
 
     return NextResponse.json({

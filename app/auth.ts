@@ -1,11 +1,7 @@
 import NextAuth from "next-auth"
 import EmailProvider from 'next-auth/providers/nodemailer'
 import { PrismaAdapter } from "@auth/prisma-adapter"
-// import { prisma } from "@/utils/prisma/prisma"
-import { PrismaClient } from '../prisma/app/generated/prisma-client'
-import { withAccelerate } from '@prisma/extension-accelerate'
-
-const prisma = new PrismaClient().$extends(withAccelerate())
+import { prisma } from "@/utils/prisma/prisma"
 import { createDefaultCategoriesForUser } from "@/services/categoryService"
  
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -18,7 +14,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   pages: {
     signIn: "/signin",
-    signOut: "/register",
+    signOut: "/register", 
     error: "/auth/error",
     newUser: "/dashboard",
     verifyRequest: "/signin",
@@ -36,7 +32,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
   events: {
     async createUser({ user }) {
-      if (user.id) await createDefaultCategoriesForUser(user.id);
+      try {
+        if (user.id) {
+          await createDefaultCategoriesForUser(user.id);
+        }
+      } catch (error) {
+        console.error('Erro ao criar categorias padrão:', error)
+        // Não impedir a criação do usuário
+      }
     }
   }
 })
