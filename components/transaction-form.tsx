@@ -3,7 +3,7 @@
 import React, { useEffect } from "react"
 
 import { useActionState, useState } from "react"
-import { CalendarIcon, Check, ChevronsUpDown, Plus } from "lucide-react"
+import { CalendarIcon, Check, ChevronsUpDown, Plus, Loader2 } from "lucide-react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -36,6 +36,7 @@ type WalletFormValues = z.infer<typeof formSchemaAccount>;
 
 export function TransactionForm({children, className, variant = "default", size = "default", account, categories }: TransactionFormProps) {
   const [open, setOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<TransactionFormValues>({
     resolver: zodResolver(formSchemaTransaction),
@@ -61,6 +62,17 @@ export function TransactionForm({children, className, variant = "default", size 
     watchedValues.category &&
     watchedValues.account &&
     watchedValues.date
+
+  // Botão deve ficar desabilitado se o formulário não for válido ou se estiver enviando
+  const isButtonDisabled = !isFormValid || isSubmitting
+
+  // Função para fechar o modal e resetar estados
+  const handleCloseModal = () => {
+    if (isSubmitting) return // Não permitir fechar durante o envio
+    setOpen(false)
+    setIsSubmitting(false)
+    form.reset()
+  }
   
   async function existAccount() {
     if (!account && open || account.valueOf() == false) {
@@ -77,19 +89,37 @@ export function TransactionForm({children, className, variant = "default", size 
       return
     }
 
-    // lógica para salvar a transação
-    const transaction = await createTransactionAction(values)
-    if(transaction.success) {
-      setOpen(false)
-      form.reset() // Limpar o formulário após sucesso
-      return toast.success("Transação criada com sucesso!")
+    // Iniciar estado de loading
+    setIsSubmitting(true)
+
+    try {
+      // lógica para salvar a transação
+      const transaction = await createTransactionAction(values)
+      
+      if(transaction.success) {
+        handleCloseModal()
+        toast.success("Transação criada com sucesso!")
+        return
+      }
+      
+      toast.error(transaction.error)
+    } catch (error) {
+      console.error("Erro ao criar transação:", error)
+      toast.error("Erro inesperado ao salvar a transação. Tente novamente.")
+    } finally {
+      // Finalizar estado de loading
+      setIsSubmitting(false)
     }
-    
-    toast.error(transaction.error)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} >
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      if (!newOpen && !isSubmitting) {
+        handleCloseModal()
+      } else if (newOpen) {
+        setOpen(true)
+      }
+    }} >
       <DialogTrigger asChild>
         {children || (
           <Button variant={variant} size={size} className={className} onClick={existAccount}>
@@ -113,8 +143,9 @@ export function TransactionForm({children, className, variant = "default", size 
                   <FormControl>
                     <Input
                       placeholder="Ex: Supermercado (obrigatório)"
+                      disabled={isSubmitting}
                       {...field}
-                      className="bg-gray-800 border-gray-700 focus-visible:ring-purple-500"
+                      className="bg-gray-800 border-gray-700 focus-visible:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </FormControl>
                   <FormMessage />
@@ -134,12 +165,13 @@ export function TransactionForm({children, className, variant = "default", size 
                       type="number"
                       step="0.01"
                       placeholder="0,00 (obrigatório)"
+                      disabled={isSubmitting}
                       value={field.value === undefined ? "" : field.value}
                       onChange={e => {
                         const val = e.target.value;
                         field.onChange(val === "" ? "" : Number(val));
                       }}
-                      className="bg-gray-800 border-gray-700 focus-visible:ring-purple-500"
+                      className="bg-gray-800 border-gray-700 focus-visible:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     </FormControl>
                     <FormMessage />
@@ -164,9 +196,11 @@ export function TransactionForm({children, className, variant = "default", size 
                         <Button
                           variant="outline"
                           role="combobox"
+                          disabled={isSubmitting}
                           className={cn(
                             "w-full justify-between bg-gray-800 border-gray-700 hover:bg-gray-700 hover:text-white",
                             !field.value && "text-muted-foreground",
+                            isSubmitting && "opacity-50 cursor-not-allowed"
                           )}
                         >
                           {field.value
@@ -242,9 +276,12 @@ export function TransactionForm({children, className, variant = "default", size 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Carteira *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}>
                     <FormControl>
-                      <SelectTrigger className="bg-gray-800 border-gray-700 focus:ring-purple-500">
+                      <SelectTrigger className={cn(
+                        "bg-gray-800 border-gray-700 focus:ring-purple-500",
+                        isSubmitting && "opacity-50 cursor-not-allowed"
+                      )}>
                         <SelectValue placeholder="Selecione uma carteira (obrigatório)" />
                       </SelectTrigger>
                     </FormControl>
@@ -288,9 +325,11 @@ export function TransactionForm({children, className, variant = "default", size 
                       <FormControl>
                         <Button
                           variant={"outline"}
+                          disabled={isSubmitting}
                           className={cn(
                             "w-full pl-3 text-left font-normal bg-gray-800 border-gray-700 hover:bg-gray-700 hover:text-white",
                             !field.value && "text-muted-foreground",
+                            isSubmitting && "opacity-50 cursor-not-allowed"
                           )}
                         >
                           {field.value ? format(field.value, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
@@ -317,20 +356,31 @@ export function TransactionForm({children, className, variant = "default", size 
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
-                className="border-gray-700 hover:bg-gray-700 hover:text-white"
+                disabled={isSubmitting}
+                onClick={handleCloseModal}
+                className={cn(
+                  "border-gray-700 hover:bg-gray-700 hover:text-white",
+                  isSubmitting && "opacity-50 cursor-not-allowed"
+                )}
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
-                disabled={!isFormValid}
+                disabled={isButtonDisabled}
                 className={cn(
                   "bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600",
-                  !isFormValid && "opacity-50 cursor-not-allowed"
+                  isButtonDisabled && "opacity-50 cursor-not-allowed"
                 )}
               >
-                Salvar
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  "Salvar"
+                )}
               </Button>
             </DialogFooter>
           </form>
