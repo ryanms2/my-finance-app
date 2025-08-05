@@ -663,6 +663,96 @@ export async function getTransactionsSummary() {
   }
 }
 
+// Função para buscar transações recentes para o dashboard
+export async function getRecentTransactions(limit: number = 5) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      transactions: [],
+      pagination: {
+        page: 1,
+        limit: limit,
+        total: 0,
+        totalPages: 0,
+      },
+    };
+  }
+
+  try {
+    // Buscar transações recentes
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        userId: session.user.id,
+      },
+      include: {
+        account: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+          }
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            icon: true,
+            color: true,
+          }
+        },
+      },
+      orderBy: [
+        { date: 'desc' },
+        { createdAt: 'desc' }
+      ],
+      take: limit,
+    });
+
+    const formattedTransactions = transactions.map(transaction => ({
+      id: transaction.id,
+      description: transaction.description,
+      amount: transaction.amount,
+      type: transaction.type,
+      date: transaction.date.toISOString().split('T')[0],
+      category: {
+        id: transaction.category.id,
+        name: transaction.category.name,
+        type: transaction.category.type,
+        icon: transaction.category.icon,
+        color: transaction.category.color,
+      },
+      account: {
+        id: transaction.account.id,
+        name: transaction.account.name,
+        type: transaction.account.type,
+      },
+      createdAt: transaction.createdAt,
+    }));
+
+    return {
+      transactions: formattedTransactions,
+      pagination: {
+        page: 1,
+        limit: limit,
+        total: formattedTransactions.length,
+        totalPages: 1,
+      },
+    };
+  } catch (error) {
+    console.error('Erro ao buscar transações recentes:', error);
+    return {
+      transactions: [],
+      pagination: {
+        page: 1,
+        limit: limit,
+        total: 0,
+        totalPages: 0,
+      },
+    };
+  }
+}
+
 // Função para buscar resumo das transações filtrado por mês e ano
 export async function getTransactionsSummaryFiltered(month: number, year: number) {
   const session = await auth();

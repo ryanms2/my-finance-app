@@ -14,7 +14,8 @@ import { Wallets } from "@/components/dashboard/wallets"
 import { MonthlyExpenses } from "@/components/dashboard/monthly-expenses"
 import { ExportDialog } from "@/components/export-dialog"
 import { getAccount, getCategoriesUser } from "@/lib/data"
-import { getDashboardSummary, getBudgetsData, getMonthlyChartData, getExpensesChartData } from "@/lib/extra"
+import { getDashboardSummary, getBudgetsData, getMonthlyChartData, getExpensesChartData, getRecentTransactions } from "@/lib/extra"
+import Link from "next/link"
 
 export const metadata: Metadata = {
   title: "MyFinance - Gerenciamento de Finanças Pessoais",
@@ -38,6 +39,8 @@ export default async function Dashboard() {
   const budgetsData = await getBudgetsData();
   const monthlyChartData = await getMonthlyChartData();
   const expensesChartData = await getExpensesChartData();
+  const recentTransactionsData = await getRecentTransactions(5);
+
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 text-white">
       <Sidebar />
@@ -99,12 +102,23 @@ export default async function Dashboard() {
             <Card className="bg-gray-900/50 border-gray-800">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Transações Recentes</CardTitle>
-                <Button variant="outline" size="sm" className="hidden sm:flex">
-                  Ver Todas
-                </Button>
+                <Link href="/transactions">
+                  <Button variant="outline" size="sm" className="hidden sm:flex">
+                    Ver Todas
+                  </Button>
+                </Link>
               </CardHeader>
               <CardContent>
-                <TransactionsTable />
+                <TransactionsTable 
+                  transactions={recentTransactionsData.transactions}
+                  wallets={wallets ? wallets.map(w => ({ id: w.id, name: w.name, type: w.type })) : []}
+                  categories={categories ? categories.map(c => ({ 
+                    id: c.id, 
+                    name: c.name, 
+                    type: c.type as 'income' | 'expense',
+                    icon: c.icon ?? undefined
+                  })) : []}
+                />
               </CardContent>
             </Card>
           </div>
