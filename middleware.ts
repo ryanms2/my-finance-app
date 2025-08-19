@@ -5,12 +5,27 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("authjs.session-token");
   const pathname = request.nextUrl.pathname;
 
-  if (pathname === "/signin" && token) {
+  // Rotas de autenticação
+  const authRoutes = ['/auth/signin', '/auth/register', '/signin']
+  const protectedRoutes = ['/dashboard', '/transactions', '/budgets', '/reports', '/settings', '/wallets']
+
+  // Se está logado e tenta acessar rota de auth, redireciona para dashboard
+  if (authRoutes.includes(pathname) && token) {
     return NextResponse.redirect(new URL(getUrl('/dashboard')))
   }
 
-  if (pathname.includes("/dashboard") && !token) {
-    return NextResponse.redirect(new URL(getUrl('/signin')))
+  // Se não está logado e tenta acessar rota protegida, redireciona para login
+  if (protectedRoutes.some(route => pathname.startsWith(route)) && !token) {
+    return NextResponse.redirect(new URL(getUrl('/auth/signin')))
+  }
+
+  // Redirecionar página raiz para dashboard se logado, senão para login
+  if (pathname === '/' && token) {
+    return NextResponse.redirect(new URL(getUrl('/dashboard')))
+  }
+  
+  if (pathname === '/' && !token) {
+    return NextResponse.redirect(new URL(getUrl('/auth/signin')))
   }
 }
 

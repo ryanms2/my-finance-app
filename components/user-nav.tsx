@@ -10,12 +10,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown"
+import { LogoutButton } from "@/components/auth/LogoutButton"
 import { auth } from "@/app/auth"
 import { NavigationLink } from "@/components/navigation-link"
+import { Settings } from "lucide-react"
 
 export async function UserNav() {
   const session = await auth()
   const user = session?.user
+
+  // Função para gerar iniciais do nome
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "US"
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
 
   return (
     <div className="flex items-center gap-2 sm:gap-4">
@@ -25,25 +38,30 @@ export async function UserNav() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8 border border-gray-700">
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">US</AvatarFallback>
+              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
+                {getInitials(user?.name)}
+              </AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user?.name || "Usuário Demo"}</p>
+              <p className="text-sm font-medium leading-none">{user?.name || "Usuário"}</p>
               <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <NavigationLink href="/settings">
-              <DropdownMenuItem>Configurações</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                Configurações
+              </DropdownMenuItem>
             </NavigationLink>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Sair</DropdownMenuItem>
+          <LogoutButton />
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

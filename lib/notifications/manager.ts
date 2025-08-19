@@ -6,6 +6,7 @@ import {
 import { createNotification } from './service'
 import { sendPushNotification } from './push'
 import { getNotificationPreferences } from './service'
+import { prisma } from '@/utils/prisma/prisma'
 
 /**
  * Sistema central de envio de notificações
@@ -65,10 +66,8 @@ export class NotificationManager {
             break
 
           case 'email':
-            if (preferences.enableEmail) {
-              const success = await this.sendEmailNotification(userId, notification)
-              results.push(success)
-            }
+            // Canal de email removido - sem configuração de email por enquanto
+            console.log('Canal de email desabilitado - configuração removida')
             break
 
           default:
@@ -167,23 +166,15 @@ export class NotificationManager {
   }
 
   /**
-   * Envia notificação por email (implementação futura)
+   * Envia notificação por email usando Resend
    */
   private async sendEmailNotification(
     userId: string,
     notification: NotificationData
   ): Promise<boolean> {
-    try {
-      // TODO: Implementar envio de email usando Resend
-      // const emailService = new EmailService()
-      // return await emailService.sendNotification(userId, notification)
-      
-      console.log(`Email notification não implementado ainda para usuário ${userId}`)
-      return false
-    } catch (error) {
-      console.error('Erro ao enviar email:', error)
-      return false
-    }
+    // Canal de email removido - sem configuração de email por enquanto
+    console.log('Função sendEmailNotification desabilitada - configuração de email removida');
+    return false;
   }
 }
 

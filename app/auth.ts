@@ -1,33 +1,87 @@
 import NextAuth from "next-auth"
-import EmailProvider from 'next-auth/providers/nodemailer'
+import Credentials from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/utils/prisma/prisma"
 import { createDefaultCategoriesForUser } from "@/services/categoryService"
- 
+import bcrypt from "bcryptjs"
+import { z } from "zod"
+
+// Schema de validação para login
+const signInSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+})
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
-    EmailProvider({
-      server: process.env.EMAIL_SERVER,
-      from: process.env.EMAIL_FROM,
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        try {
+          // Validar entrada
+          const { email, password } = signInSchema.parse(credentials)
+
+          // Buscar usuário no banco
+          const user = await prisma.user.findUnique({
+            where: { email: email.toLowerCase() }
+          })
+
+          if (!user || !user.password) {
+            return null
+          }
+
+          // Verificar senha
+          const isPasswordValid = await bcrypt.compare(password, user.password)
+          
+          if (!isPasswordValid) {
+            return null
+          }
+
+          // Retornar dados do usuário (sem a senha)
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            image: user.image,
+          }
+        } catch (error) {
+          console.error('Erro na autorização:', error)
+          return null
+        }
+      }
     })
   ],
-  adapter: PrismaAdapter(prisma),
   pages: {
-    signIn: "/signin",
-    signOut: "/register", 
+    signIn: "/auth/signin",
+    signOut: "/auth/signin", 
     error: "/auth/error",
-    newUser: "/dashboard",
-    verifyRequest: "/signin",
   },
   callbacks: {
-    async signIn({ user, account, profile, email, credentials }) {
+    async signIn({ user, account }) {
       return true
     },
     async redirect({ url, baseUrl }) {
-      // Se a URL já é absoluta e válida, use ela
-      if (url.startsWith("http")) return url
-      // Senão, use a baseUrl configurada
-      return baseUrl
+      // Redirecionar para dashboard após login
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      else if (new URL(url).origin === baseUrl) return url
+      return `${baseUrl}/dashboard`
+    },
+    async session({ session, token }) {
+      if (token.sub) {
+        session.user.id = token.sub
+      }
+      return session
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id
+      }
+      return token
     },
   },
   events: {
@@ -38,8 +92,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         }
       } catch (error) {
         console.error('Erro ao criar categorias padrão:', error)
-        // Não impedir a criação do usuário
       }
     }
-  }
+  },
+  session: {
+    strategy: "jwt",
+  },
+  secret: process.env.AUTH_SECRET,
 })
