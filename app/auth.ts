@@ -32,6 +32,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           })
 
           if (!user || !user.password) {
+            // Retornar null vai acionar o erro CredentialsSignin automaticamente
             return null
           }
 
@@ -39,6 +40,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           const isPasswordValid = await bcrypt.compare(password, user.password)
           
           if (!isPasswordValid) {
+            // Retornar null vai acionar o erro CredentialsSignin automaticamente
             return null
           }
 
@@ -63,7 +65,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async signIn({ user, account }) {
-      return true
+      // Apenas retorna true para permitir o login
+      return true;
     },
     async redirect({ url, baseUrl }) {
       // Redirecionar para dashboard após login

@@ -218,4 +218,25 @@
 .stagger-delay-2 { animation-delay: 0.2s; }
 .stagger-delay-3 { animation-delay: 0.3s; }
 .stagger-delay-4 { animation-delay: 0.4s; }
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.animate-delay-150 {
+  animation-delay: 150ms;
+}
+
+.animate-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animate-reverse {
+  animation-direction: reverse;
+}
 .stagger-delay-5 { animation-delay: 0.5s; }

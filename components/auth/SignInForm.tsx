@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, LogIn, Mail, Lock, ArrowLeft } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { AuthLoadingScreen } from './AuthLoadingScreen'
 
 export function SignInForm() {
   const [email, setEmail] = useState('')
@@ -34,7 +35,16 @@ export function SignInForm() {
       })
 
       if (result?.error) {
-        setError('Email ou senha incorretos')
+        console.log('Erro de autenticação:', result.error)
+        
+        // O NextAuth v5 utiliza o erro 'CredentialsSignin' para falhas de autenticação
+        if (result.error === 'CredentialsSignin') {
+          // Como não temos como diferenciar "conta não encontrada" de "senha incorreta"
+          // vamos exibir uma mensagem genérica para aumentar a segurança
+          setError('Credenciais inválidas. Verifique seu email e senha ou crie uma nova conta.')
+        } else {
+          setError('Erro na autenticação. Verifique suas credenciais.')
+        }
       } else {
         toast({
           title: 'Login realizado com sucesso!',
@@ -44,6 +54,7 @@ export function SignInForm() {
         router.refresh()
       }
     } catch (error) {
+      console.error('Erro inesperado:', error)
       setError('Erro inesperado. Tente novamente.')
     } finally {
       setIsLoading(false)
@@ -51,35 +62,39 @@ export function SignInForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 to-gray-900 p-4">
-      <div className="w-full max-w-md">
-        <Link 
-          href="/" 
-          className="inline-flex items-center text-white/70 hover:text-white mb-6 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Voltar ao início
-        </Link>
-        
-        <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center text-white">
-              Entrar no MyFinance
-            </CardTitle>
-            <CardDescription className="text-center text-gray-400">
-              Digite suas credenciais para acessar sua conta
-            </CardDescription>
-          </CardHeader>
-          
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              {error && (
-                <Alert className="border-red-600 bg-red-600/10">
-                  <AlertDescription className="text-red-400">
-                    {error}
-                  </AlertDescription>
-                </Alert>
-              )}
+    <>
+      {isLoading ? (
+        <AuthLoadingScreen />
+      ) : (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 to-gray-900 p-4">
+          <div className="w-full max-w-md">
+            <Link 
+              href="/" 
+              className="inline-flex items-center text-white/70 hover:text-white mb-6 transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar ao início
+            </Link>
+            
+            <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-sm">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl text-center text-white">
+                  Entrar no MyFinance
+                </CardTitle>
+                <CardDescription className="text-center text-gray-400">
+                  Digite suas credenciais para acessar sua conta
+                </CardDescription>
+              </CardHeader>
+              
+              <form onSubmit={handleSubmit}>
+                <CardContent className="space-y-4">
+                  {error && (
+                    <Alert className="border-red-600 bg-red-600/10">
+                      <AlertDescription className="text-red-400">
+                        {error}
+                      </AlertDescription>
+                    </Alert>
+                  )}
               
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-white">Email</Label>
@@ -154,5 +169,7 @@ export function SignInForm() {
         </Card>
       </div>
     </div>
+      )}
+    </>
   )
 }

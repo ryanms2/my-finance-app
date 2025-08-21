@@ -152,6 +152,9 @@ importers:
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@19.0.0)
+      my-finance-app:
+        specifier: 'link:'
+        version: 'link:'
       next:
         specifier: latest
         version: 15.4.5(@babel/core@7.28.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
