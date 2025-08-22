@@ -2,20 +2,15 @@ import { Save } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Sidebar } from "@/components/sidebar"
 import { UserNav } from "@/components/user-nav"
-import { MobileNav } from "@/components/mobile-nav"
 import { MobileMenu } from "@/components/mobile-menu"
 import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ProfileForm } from "@/components/settings/ProfileForm"
 import { DeleteAccount } from "@/components/settings/DeleteAccount"
 import { NotificationSettings } from "../notifications/NotificationSettings"
-import { NotificationTestComponent } from "@/components/settings/NotificationTestComponent"
 
 interface User {
   id: string;
@@ -145,52 +140,6 @@ export function SettingsPage({ user }: SettingsPageProps) {
                   <NotificationSettings />
                 </CardContent>
               </Card>
-            </TabsContent>
-
-            <TabsContent value="system">
-              <div className="grid gap-6">
-                <Card className="bg-gray-900/50 border-gray-800">
-                  <CardHeader>
-                    <CardTitle>Configurações do Sistema</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Configurações técnicas e testes do sistema
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
-                      <div>
-                        <h3 className="text-lg font-medium mb-4">Teste de Notificações</h3>
-                        <NotificationTestComponent />
-                      </div>
-                    </div>
-                    
-                    <div className="border-t border-gray-800 pt-6">
-                      <h3 className="text-lg font-medium mb-4">Informações do Sistema</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-400">Ambiente:</p>
-                          <p className="font-mono">{process.env.NODE_ENV || 'development'}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Versão:</p>
-                          <p className="font-mono">1.0.0</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Status da API:</p>
-                          <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                            <span>Online</span>
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-gray-400">Notificações:</p>
-                          <p className="font-mono">In-app + Push</p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             </TabsContent>
           </Tabs>
         </main>

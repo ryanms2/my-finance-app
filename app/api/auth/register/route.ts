@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/utils/prisma/prisma'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { createDefaultCategoriesForUser } from '@/services/categoryService'
 
 // Schema de validação
 const registerSchema = z.object({
@@ -47,6 +48,9 @@ export async function POST(request: NextRequest) {
         createdAt: true,
       }
     })
+
+    // Criar categorias padrão para o usuário
+    await createDefaultCategoriesForUser(user.id)
 
     return NextResponse.json({
       message: 'Usuário criado com sucesso',

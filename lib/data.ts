@@ -4,6 +4,7 @@ import { prisma } from "@/utils/prisma/prisma";
 import { z } from "zod";
 import { formSchemaAccount, formSchemaTransaction, formSchemaTransfer } from "./types";
 import { revalidatePath } from 'next/cache';
+import bcrypt from "bcryptjs";
   
 /**
  * Helper para revalidar todas as páginas que podem ser afetadas por mudanças financeiras
@@ -244,6 +245,47 @@ export async function updateUserProfile(data: { name: string }) {
   } catch (error) {
     console.error('Erro ao atualizar perfil:', error);
     return { success: false, message: 'Erro ao atualizar perfil' };
+  }
+}
+
+export async function updateUserPassword(data: { currentPassword: string; newPassword: string }) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  
+  if (!userId) {
+    return { success: false, message: 'Usuário não autenticado' };
+  }
+
+  try {
+    // Buscar usuário com senha atual
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { password: true }
+    });
+
+    if (!user || !user.password) {
+      return { success: false, message: 'Usuário não encontrado ou não possui senha configurada' };
+    }
+
+    // Verificar se a senha atual está correta
+    const isCurrentPasswordValid = await bcrypt.compare(data.currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return { success: false, message: 'Senha atual incorreta' };
+    }
+
+    // Hash da nova senha
+    const hashedPassword = await bcrypt.hash(data.newPassword, 12);
+
+    // Atualizar a senha
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword }
+    });
+
+    return { success: true, message: 'Senha atualizada com sucesso' };
+  } catch (error) {
+    console.error('Erro ao atualizar senha:', error);
+    return { success: false, message: 'Erro ao atualizar senha' };
   }
 }
 
