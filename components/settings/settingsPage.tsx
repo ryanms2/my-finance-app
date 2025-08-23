@@ -47,7 +47,6 @@ export function SettingsPage({ user }: SettingsPageProps) {
               <TabsTrigger value="account">Conta</TabsTrigger>
               <TabsTrigger value="appearance">Aparência</TabsTrigger>
               <TabsTrigger value="notifications">Notificações</TabsTrigger>
-              <TabsTrigger value="system">Sistema</TabsTrigger>
             </TabsList>
 
             <TabsContent value="profile">

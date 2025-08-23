@@ -258,7 +258,7 @@ export async function getBudgetsData() {
         spent,
         total: budget.amount,
         percentage,
-        color: budget.category.color || 'from-gray-400 to-gray-600',
+        color: budget.category.color || 'from-purple-500 to-blue-500',
         categoryId: budget.categoryId,
         icon: budget.category.icon,
       };

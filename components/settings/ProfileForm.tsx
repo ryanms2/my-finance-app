@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -35,9 +36,11 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ user }: ProfileFormProps) {
+  const [activeTab, setActiveTab] = useState('profile')
+  const [name, setName] = useState(user?.name || "")
   const [isLoading, setIsLoading] = useState(false)
-  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-  const [name, setName] = useState(user?.name || '')
+  const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null)
+  const router = useRouter()
   
   // Estados para gerenciar a troca de senha
   const [currentPassword, setCurrentPassword] = useState('')
@@ -111,7 +114,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         setAlert({ type: 'success', message: result.message })
         // Recarregar a página após sucesso para atualizar os dados
         setTimeout(() => {
-          window.location.reload()
+          router.refresh()
         }, 1500)
       } else {
         setAlert({ type: 'error', message: result.message })

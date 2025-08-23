@@ -12,8 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { NotificationsDropdown } from "@/components/notifications/NotificationsDropdown"
-import Link from "next/link"
 import { NavigationLink } from "@/components/navigation-link"
+import { LogoutButton } from "./auth/LogoutButton"
+import { Settings, User } from "lucide-react"
 
 interface UserNavClientProps {
   user?: {
@@ -25,6 +26,17 @@ interface UserNavClientProps {
 }
 
 export function UserNavClient({ user }: UserNavClientProps) {
+  // Função para gerar iniciais do nome
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "US"
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
   return (
     <div className="flex items-center gap-2 sm:gap-4">
       <NotificationsDropdown />
@@ -34,37 +46,35 @@ export function UserNavClient({ user }: UserNavClientProps) {
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8 border border-gray-700">
               <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
-                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                {getInitials(user?.name)}
               </AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56 bg-gray-900 border-gray-800" align="end" forceMount>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user?.name || 'Usuário'}</p>
-              <p className="text-xs leading-none text-gray-400">
-                {user?.email || 'usuario@exemplo.com'}
-              </p>
+              <p className="text-sm font-medium leading-none">{user?.name || "Usuário"}</p>
+              <p className="text-xs leading-none text-muted-foreground">{user?.email || 'usuario@exemplo.com'}</p>
             </div>
           </DropdownMenuLabel>
-          <DropdownMenuSeparator className="bg-gray-800" />
+          <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <NavigationLink href="/settings">
+            <NavigationLink href="/settings">
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
                 Perfil
-              </NavigationLink>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <NavigationLink href="/settings">
+              </DropdownMenuItem>
+            </NavigationLink>
+            <NavigationLink href="/settings">
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
                 Configurações
-              </NavigationLink>
-            </DropdownMenuItem>
+              </DropdownMenuItem>
+            </NavigationLink>
           </DropdownMenuGroup>
-          <DropdownMenuSeparator className="bg-gray-800" />
-          <DropdownMenuItem>
-            Sair
-          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <LogoutButton />
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

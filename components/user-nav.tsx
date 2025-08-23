@@ -13,7 +13,7 @@ import { NotificationsDropdown } from "@/components/notifications/NotificationsD
 import { LogoutButton } from "@/components/auth/LogoutButton"
 import { auth } from "@/app/auth"
 import { NavigationLink } from "@/components/navigation-link"
-import { Settings } from "lucide-react"
+import { Settings, User } from "lucide-react"
 
 export async function UserNav() {
   const session = await auth()
@@ -53,6 +53,12 @@ export async function UserNav() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
+            <NavigationLink href="/settings">
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                Perfil
+              </DropdownMenuItem>
+            </NavigationLink>
             <NavigationLink href="/settings">
               <DropdownMenuItem>
                 <Settings className="mr-2 h-4 w-4" />

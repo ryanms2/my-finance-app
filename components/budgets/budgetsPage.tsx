@@ -9,6 +9,8 @@ import { MobileNav } from "@/components/mobile-nav"
 import { MobileMenu } from "@/components/mobile-menu"
 import { ExpensesDonutChart } from "@/components/expenses-donut-chart"
 import { ExportDialog } from "@/components/export-dialog"
+import { BudgetForm } from "@/components/budgets/budget-form"
+import { BudgetActions } from "@/components/budgets/budget-actions"
 
 interface Budget {
   id: string
@@ -35,9 +37,10 @@ interface BudgetsSummary {
 interface BudgetsPageProps {
   budgets: Budget[]
   summary: BudgetsSummary | null
+  categories?: any[]
 }
 
-export function BudgetsPage({ budgets, summary }: BudgetsPageProps) {
+export function BudgetsPage({ budgets, summary, categories = [] }: BudgetsPageProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -54,14 +57,12 @@ export function BudgetsPage({ budgets, summary }: BudgetsPageProps) {
             <h1 className="text-xl font-bold ml-10 lg:ml-0">Orçamentos</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <Button
+            <BudgetForm
               variant="outline"
               size="sm"
               className="hidden sm:flex gap-1 text-green-400 border-green-400/20 hover:bg-green-400/10"
-            >
-              <Plus className="h-4 w-4" />
-              Novo Orçamento
-            </Button>
+              categories={categories}
+            />
             <ExportDialog defaultType="budgets">
               <Button variant="outline" size="sm" className="hidden sm:flex gap-1">
                 <Download className="h-4 w-4" />
@@ -118,9 +119,10 @@ export function BudgetsPage({ budgets, summary }: BudgetsPageProps) {
                 </div>
                 <h3 className="text-xl font-medium mb-2">Nenhum orçamento encontrado</h3>
                 <p className="text-gray-400 mb-6">Crie seu primeiro orçamento para começar a controlar seus gastos</p>
-                <Button className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-                  Novo Orçamento
-                </Button>
+                <BudgetForm 
+                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                  categories={categories}
+                />
               </div>
             ) : (
               <>
@@ -132,16 +134,19 @@ export function BudgetsPage({ budgets, summary }: BudgetsPageProps) {
                           <span className="text-lg">{budget.icon}</span>
                           <CardTitle className="text-lg">{budget.name}</CardTitle>
                         </div>
-                        <div
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            budget.percentage >= 90
-                              ? "bg-red-500/20 text-red-300"
-                              : budget.percentage >= 75
-                                ? "bg-orange-500/20 text-orange-300"
-                                : "bg-green-500/20 text-green-300"
-                          }`}
-                        >
-                          {budget.percentage}%
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              budget.percentage >= 90
+                                ? "bg-red-500/20 text-red-300"
+                                : budget.percentage >= 75
+                                  ? "bg-orange-500/20 text-orange-300"
+                                  : "bg-green-500/20 text-green-300"
+                            }`}
+                          >
+                            {budget.percentage}%
+                          </div>
+                          <BudgetActions budget={budget} />
                         </div>
                       </div>
                     </CardHeader>
@@ -156,7 +161,7 @@ export function BudgetsPage({ budgets, summary }: BudgetsPageProps) {
                         <div className="relative pt-1">
                           <div className="h-2 rounded-full bg-gray-800">
                             <div
-                              className={`absolute top-0 h-2 rounded-full bg-gradient-to-r ${budget.color || 'from-gray-400 to-gray-600'}`}
+                              className={`absolute top-0 h-2 rounded-full ${budget.color === 'from-gray-400 to-gray-600' ? 'bg-gradient-to-r from-purple-500 to-blue-500' : budget.color}`}
                               style={{ width: `${Math.min(budget.percentage, 100)}%` }}
                             ></div>
                           </div>
@@ -185,9 +190,10 @@ export function BudgetsPage({ budgets, summary }: BudgetsPageProps) {
                   <p className="text-sm text-gray-400 text-center mb-4">
                     Crie um novo orçamento para controlar seus gastos
                   </p>
-                  <Button className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600">
-                    Novo Orçamento
-                  </Button>
+                  <BudgetForm 
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                    categories={categories}
+                  />
                 </Card>
               </>
             )}

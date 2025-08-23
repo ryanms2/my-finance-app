@@ -1,5 +1,5 @@
-import { PageLoadingSkeleton } from "@/components/ui/loading-skeleton"
+import { BudgetsLoadingSkeleton } from "@/components/budgets/budgets-loading"
 
 export default function Loading() {
-  return <PageLoadingSkeleton />
+  return <BudgetsLoadingSkeleton />
 }
