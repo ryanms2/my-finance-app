@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -30,6 +30,9 @@ export async function UserNav() {
       .slice(0, 2)
   }
 
+  // Verificar se a imagem do usuário existe e formatá-la corretamente
+  const userImage = user?.image ? `${user.image}?v=${Date.now()}` : null
+
   return (
     <div className="flex items-center gap-2 sm:gap-4">
       <NotificationsDropdown />
@@ -38,9 +41,17 @@ export async function UserNav() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8 border border-gray-700">
-              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
-                {getInitials(user?.name)}
-              </AvatarFallback>
+              {userImage ? (
+                <AvatarImage 
+                  src={userImage} 
+                  alt={user?.name || "Avatar do usuário"} 
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-white">
+                  {getInitials(user?.name)}
+                </AvatarFallback>
+              )}
             </Avatar>
           </Button>
         </DropdownMenuTrigger>

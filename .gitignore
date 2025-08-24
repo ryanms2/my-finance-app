@@ -48,6 +48,10 @@ prisma/dev.db
 # Logs de teste
 test-results/
 
+# Uploads de imagens de perfil (manter o .gitkeep)
+/public/uploads/*
+!/public/uploads/.gitkeep
+
 # Arquivos temporários de teste
 *.test.log
 

@@ -9,8 +9,19 @@ const nextConfig: NextConfig = {
     "http://localhost:3000",
     "http://192.168.0.102:3000",
   ],
-  // Ignorar pasta de backup
- 
+  // Configurações de imagem para permitir imagens locais e remotas
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

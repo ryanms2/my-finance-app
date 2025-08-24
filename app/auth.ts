@@ -78,6 +78,25 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (token.sub) {
         session.user.id = token.sub
       }
+      
+      // Assegurar que temos as informações mais recentes do usuário
+      if (token.sub) {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { name: true, email: true, image: true }
+          });
+          
+          if (user) {
+            if (user.name) session.user.name = user.name;
+            if (user.email) session.user.email = user.email;
+            if (user.image) session.user.image = user.image;
+          }
+        } catch (error) {
+          console.error('Erro ao buscar dados do usuário para sessão:', error);
+        }
+      }
+      
       return session
     },
     async jwt({ token, user }) {

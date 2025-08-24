@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,11 +17,16 @@ import {
   KeyRound,
   Eye,
   EyeOff,
-  ShieldCheck
+  ShieldCheck,
+  Upload,
+  Camera,
+  X,
+  Trash2
 } from "lucide-react"
-import { updateUserProfile, updateUserPassword } from "@/lib/data"
+import { updateUserProfile, updateUserPassword, updateUserImage, removeUserImage } from "@/lib/user"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface User {
   id: string;
@@ -42,6 +48,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const [alert, setAlert] = useState<{ type: 'success' | 'error', message: string } | null>(null)
   const router = useRouter()
   
+  // Estados para foto de perfil
+  const [imageUrl, setImageUrl] = useState<string | null>(user?.image || null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(user?.image || null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [isRemovingImage, setIsRemovingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
   // Estados para gerenciar a troca de senha
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -54,6 +68,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
   useEffect(() => {
     if (user) {
       setName(user.name || '')
+      // Adicionar timestamp para evitar cache da imagem
+      setImagePreview(user.image ? `${user.image}?v=${Date.now()}` : null)
+      setImageUrl(user.image || null)
     }
   }, [user])
 
@@ -90,6 +107,123 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
     setPasswordErrors(errors)
     return errors.length === 0
+  }
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Verificar tipo e tamanho da imagem
+    if (!file.type.startsWith('image/')) {
+      setAlert({ type: 'error', message: 'Por favor, selecione uma imagem válida' })
+      return
+    }
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB
+      setAlert({ type: 'error', message: 'A imagem deve ter menos de 2MB' })
+      return
+    }
+
+    setImageFile(file)
+    
+    // Criar preview da imagem
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target?.result as string
+      setImagePreview(result)
+    }
+    reader.readAsDataURL(file)
+    
+    setAlert(null)
+  }
+  
+  const handleImageUpload = async () => {
+    if (!imageFile) return
+    
+    setIsUploadingImage(true)
+    setAlert(null)
+    
+    try {
+      // Criar um FormData para enviar o arquivo
+      const formData = new FormData()
+      formData.append('file', imageFile)
+      
+      // Enviar para o endpoint de upload
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      
+      const data = await response.json()
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Erro ao fazer upload da imagem')
+      }
+      
+      // Usar a URL retornada pelo servidor
+      const imageUrl = data.url
+      
+      // Atualizar o perfil do usuário com a nova URL de imagem
+      const result = await updateUserImage({ imageUrl })
+      
+      if (result.success) {
+        setImageUrl(imageUrl)
+        setImagePreview(imageUrl) // Atualizar o preview com a URL permanente
+        setImageFile(null) // Limpar o arquivo após o upload bem-sucedido
+        setAlert({ type: 'success', message: 'Foto de perfil atualizada com sucesso!' })
+        
+        // Recarregar a página após sucesso
+        setTimeout(() => {
+          router.refresh()
+        }, 1500)
+      } else {
+        setAlert({ type: 'error', message: result.message })
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload da imagem:', error)
+      setAlert({ type: 'error', message: 'Erro ao atualizar foto de perfil. Tente novamente.' })
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+  
+  // Função para remover a imagem de perfil permanentemente
+  const handleDeleteProfileImage = async () => {
+    if (!user?.image) return
+    
+    setIsRemovingImage(true)
+    setAlert(null)
+    
+    try {
+      const result = await removeUserImage()
+      
+      if (result.success) {
+        setImageUrl(null)
+        setImagePreview(null)
+        setAlert({ type: 'success', message: 'Foto de perfil removida com sucesso!' })
+        
+        // Recarregar a página após sucesso
+        setTimeout(() => {
+          router.refresh()
+        }, 1500)
+      } else {
+        setAlert({ type: 'error', message: result.message })
+      }
+    } catch (error) {
+      console.error('Erro ao remover foto de perfil:', error)
+      setAlert({ type: 'error', message: 'Erro ao remover foto de perfil. Tente novamente.' })
+    } finally {
+      setIsRemovingImage(false)
+    }
+  }
+
+  // Função para cancelar a seleção de imagem atual
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -202,7 +336,116 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
       <TabsContent value="profile" className="space-y-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Foto de perfil */}
+            <div className="flex flex-col items-center space-y-4 border-b border-gray-700 pb-6">
+              <div className="relative">
+                <div className="w-28 h-28 rounded-full overflow-hidden bg-gray-800 border-4 border-gray-700 relative">
+                  {imagePreview ? (
+                    <Image 
+                      src={imagePreview} 
+                      alt="Foto de perfil"
+                      width={112}
+                      height={112}
+                      className="w-full h-full object-cover"
+                      unoptimized={imagePreview.startsWith('data:')} // Não otimizar previews de data URL
+                    />
+                  ) : user?.image ? (
+                    <Image 
+                      src={user.image} 
+                      alt="Foto de perfil"
+                      width={112}
+                      height={112}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-800">
+                      <User className="h-12 w-12 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                
+                {imagePreview && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                    title="Cancelar seleção"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+                
+                <div className="absolute bottom-0 right-0">
+                  <label 
+                    htmlFor="profile-image" 
+                    className="bg-gray-800 hover:bg-gray-700 text-white p-2 rounded-full cursor-pointer border border-gray-600"
+                    title="Selecionar foto"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </label>
+                  <input
+                    id="profile-image"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageSelect}
+                  />
+                </div>
+                
+                {/* Botão para remover a foto de perfil atual */}
+                {!imageFile && user?.image && (
+                  <div className="absolute bottom-0 left-0">
+                    <button
+                      type="button"
+                      onClick={handleDeleteProfileImage}
+                      className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full cursor-pointer border border-red-600"
+                      title="Remover foto de perfil"
+                      disabled={isRemovingImage}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {imageFile && (
+                <div className="flex flex-col items-center space-y-2">
+                  <p className="text-sm text-gray-400">
+                    {imageFile.name} ({(imageFile.size / 1024).toFixed(2)} KB)
+                  </p>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+                    onClick={handleImageUpload}
+                    disabled={isUploadingImage}
+                  >
+                    {isUploadingImage ? (
+                      <span className="flex items-center">
+                        <span className="animate-spin mr-2">
+                          <svg className="w-4 h-4" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        </span>
+                        Enviando...
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <Upload className="mr-2 h-4 w-4" /> 
+                        Salvar foto
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              )}
+              
+              <p className="text-sm text-gray-400">
+                Adicione uma foto de perfil para personalizar sua conta
+              </p>
+            </div>          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
